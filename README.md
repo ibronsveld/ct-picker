@@ -1,27 +1,21 @@
-<html>
-<head>
-</head>
-<body>
-<style>
-    .container {
-        background-color: #9191E9;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100vw;
-        height: 100vh;
-    }
+# commercetools Product Picker
 
-</style>
-<h1>Test</h1>
-<button id="openPicker" onclick="openPicker()" class="button">OPEN PICKER</button>
+The commercetools Product Picker is a standalone Javascript component that can be added to third party applications, 
+such as Content Management Systems, to allow users to select products and/or categories.
 
-<div id="container">
+## Example:
 
-</div>
-</body>
+TODO
 
-<script>
+## Running it locally:
+
+```
+yarn start
+``` 
+
+## Using it in your application
+
+```javascript
 
   var pickerOptions = {
     config: {
@@ -64,5 +58,5 @@
       }
     });
   }
-</script>
-</html>
+
+```

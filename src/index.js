@@ -105,7 +105,7 @@ class CTPicker {
     // UI has not been generated yet, so ensure we generate the HTML and attach the correct handlers to the buttons
     if (!self.UIgenerated) {
 
-      switch(mode || self.options.mode) {
+      switch (mode || self.options.mode) {
         case 'embedded':
           self._generateEmbedded();
           break;
@@ -119,70 +119,74 @@ class CTPicker {
         try {
 
           // Add
-          let saveButton = document.getElementById("ct_saveButton");
-          // Hide the OK button when nothing selected
-          // saveButton.style.display = "none";
+          if (self.displayOptions.showSelectButton) {
+            let saveButton = document.getElementById("ct_saveButton");
+            // Hide the OK button when nothing selected
+            // saveButton.style.display = "none";
 
-          if (self.options.handlers && self.options.handlers.onSelect) {
-            saveButton.onclick = () => {
+            if (self.options.handlers && self.options.handlers.onSelect) {
+              saveButton.onclick = () => {
 
-              switch(mode || self.options.mode) {
-                case 'dialog':
-                  self._toggle();
-                  break;
-              }
-              self._getSelectedItems().then((data) => {
-                self.options.handlers.onSelect(data);
-              })
-            }
-          } else {
-            saveButton.onclick = () => {
-
-              switch(mode || self.options.mode) {
-                case 'dialog':
-                  self._toggle();
-                  break;
-              }
-
-              if (self.resolveFn) {
+                switch (mode || self.options.mode) {
+                  case 'dialog':
+                    self._toggle();
+                    break;
+                }
                 self._getSelectedItems().then((data) => {
-                  self.resolveFn(data);
+                  self.options.handlers.onSelect(data);
                 })
-              } else {
-                throw "Error resolving / rejecting the promise.";
               }
-            };
+            } else {
+              saveButton.onclick = () => {
+
+                switch (mode || self.options.mode) {
+                  case 'dialog':
+                    self._toggle();
+                    break;
+                }
+
+                if (self.resolveFn) {
+                  self._getSelectedItems().then((data) => {
+                    self.resolveFn(data);
+                  })
+                } else {
+                  throw "Error resolving / rejecting the promise.";
+                }
+              };
+            }
           }
 
           // TODO: Add event handlers
-          let cancelButton = document.getElementById("ct_cancelButton");
+          if (self.displayOptions.showCancelButton) {
+            let cancelButton = document.getElementById("ct_cancelButton");
 
-          if (self.options.handlers && self.options.handlers.onCancel) {
-            cancelButton.onclick = () => {
+            if (self.options.handlers && self.options.handlers.onCancel) {
+              cancelButton.onclick = () => {
 
-              switch(mode || self.options.mode) {
-                case 'dialog':
-                  self._toggle();
-                  break;
+                switch (mode || self.options.mode) {
+                  case 'dialog':
+                    self._toggle();
+                    break;
+                }
+
+                self.options.handlers.onCancel();
               }
+            } else {
+              cancelButton.onclick = () => {
 
-              self.options.handlers.onCancel();
+                switch (mode || self.options.mode) {
+                  case 'dialog':
+                    self._toggle();
+                    break;
+                }
+
+                if (self.rejectFn) {
+                  self.rejectFn("cancel");
+                } else {
+                  throw "Error resolving / rejecting the promise.";
+                }
+              };
             }
-          } else {
-            cancelButton.onclick = () => {
-
-              switch(mode || self.options.mode) {
-                case 'dialog':
-                  self._toggle();
-                  break;
-              }
-
-              if (self.rejectFn) {
-                self.rejectFn("cancel");
-              } else {
-                throw "Error resolving / rejecting the promise.";
-              }
-            };
           }
 
           // TODO: Add the basic text search option
@@ -214,7 +218,7 @@ class CTPicker {
       self.UIgenerated = true;
     }
 
-    switch(mode || self.options.mode) {
+    switch (mode || self.options.mode) {
       case 'dialog':
         self._toggle();
         break;

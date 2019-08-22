@@ -119,8 +119,8 @@ class CTPicker {
         try {
 
           // Add
-          if (self.displayOptions) {
-            if (self.displayOptions.showSelectButton) {
+          if (self.options.displayOptions) {
+            if (self.options.displayOptions.showSelectButton) {
               let saveButton = document.getElementById("ct_saveButton");
               // Hide the OK button when nothing selected
               // saveButton.style.display = "none";
@@ -158,7 +158,7 @@ class CTPicker {
             }
 
             // TODO: Add event handlers
-            if (self.displayOptions.showCancelButton) {
+            if (self.options.displayOptions.showCancelButton) {
               let cancelButton = document.getElementById("ct_cancelButton");
 
               if (self.options.handlers && self.options.handlers.onCancel) {

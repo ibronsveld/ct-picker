@@ -40,9 +40,9 @@ class CTPicker {
       }
 
       // Set the operating mode
-      if (!this.options.mode) {
-        this.options.mode = 'dialog';
-      }
+      // if (!this.options.mode) {
+      //   this.options.mode = 'dialog';
+      // }
     }
 
     try {
@@ -64,7 +64,8 @@ class CTPicker {
     if (self.containerElement) {
       // Load the template from the URL
       // TODO: How do we handle this in production?
-      let url = "https://ct-merchant-test.herokuapp.com/src/picker.html";
+      let url = "picker.html";
+      // let url = "https://ct-merchant-test.herokuapp.com/src/picker.html";
       fetch(url).then((response) => {
         response.text().then((modalUIData) => {
           // Adds the HTML scripts to the page for use with Handlebars
@@ -287,6 +288,7 @@ class CTPicker {
     // TODO: ADD TRANSLATIONS HERE
     let finalHTML = dialog({});
     let wrapper = document.createElement('div');
+    wrapper.id = "ct_PickerWrapper";
     wrapper.innerHTML = finalHTML;
     self.containerElement.appendChild(wrapper);
   }

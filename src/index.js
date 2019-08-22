@@ -64,7 +64,8 @@ class CTPicker {
     if (self.containerElement) {
       // Load the template from the URL
       // TODO: How do we handle this in production?
-      fetch('picker.html').then((response) => {
+      let url = "https://ct-merchant-test.herokuapp.com/src/picker.html";
+      fetch(url).then((response) => {
         response.text().then((modalUIData) => {
           // Adds the HTML scripts to the page for use with Handlebars
           self.containerElement.innerHTML = modalUIData;

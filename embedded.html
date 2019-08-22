@@ -31,22 +31,29 @@
       },
       apiUri: 'https://api.commercetools.com'
     },
-    mode: 'embedded',
+    mode: "embedded",
     pageSize: 20,
     language: "en",
-    selectionMode: 'single',
-    facets: {
-      color: {
-        name: "Color",
-        filter: "variants.attributes.color.key",
-        limit: 5
-      },
-      designer: {
-        name: "Designer",
-        filter: "variants.attributes.designer.key",
-        limit: 5
-      }
+    selectionMode: "single",
+    pickerMode: "category",
+    displayOptions: {
+      showHeader: false,
+      showPaging: false,
+      showCancelButton: false,
+      showSelectButton: true
     },
+    // facets: {
+    //   color: {
+    //     name: "Color",
+    //     filter: "variants.attributes.color.key",
+    //     limit: 5
+    //   },
+    //   designer: {
+    //     name: "Designer",
+    //     filter: "variants.attributes.designer.key",
+    //     limit: 5
+    //   }
+    // },
     handlers: {
       onSelect: (items) => {
         console.log('selected ', items);

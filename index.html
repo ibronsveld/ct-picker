@@ -1,0 +1,80 @@
+<html>
+<head>
+</head>
+<body>
+<style>
+    .container {
+        background-color: #9191E9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+    }
+
+</style>
+<h1>Test</h1>
+<button id="openPicker" onclick="openPicker()" class="button">OPEN PICKER</button>
+
+<div id="container">
+
+</div>
+</body>
+
+<script>
+
+  var pickerOptions = {
+    config: {
+      authUri: 'https://auth.commercetools.com',
+      projectKey: 'ivos-personal-project',
+      credentials: {
+        clientId: 'GVijKg5WUzUjZwO8v2FJNv_i',
+        clientSecret: 'MoVEzWL2uAEj9Y0Zoy1F9dTIBPkXDUlk'
+      },
+      apiUri: 'https://api.commercetools.com'
+    },
+    mode: 'dialog',
+    pageSize: 20,
+    language: "en",
+    facets: {
+      color: {
+        name: "Color",
+        filter: "variants.attributes.color.key",
+        limit: 5
+      },
+      designer: {
+        name: "Designer",
+        filter: "variants.attributes.designer.key",
+        limit: 5
+      }
+    }
+  };
+
+  let ctPicker = new CTPicker(pickerOptions, 'container');
+  ctPicker.init();
+
+  // setTimeout(() => {
+  //   ctPicker.show().then((data) => {
+  //     console.log(data);
+  //   }).catch((msg) => {
+  //     if (msg === 'cancel') {
+  //       console.log("user cancelled the dialog without selecting any items");
+  //     } else {
+  //       console.error(msg);
+  //     }
+  //   });
+  // }, 500);
+
+  function openPicker() {
+    ctPicker.show('dialog').then((data) => {
+      console.log(data);
+    }).catch((msg) => {
+      if (msg === 'cancel') {
+        console.log("user cancelled the dialog without selecting any items");
+      } else {
+        console.error(msg);
+      }
+    });
+  }
+</script>
+</html>

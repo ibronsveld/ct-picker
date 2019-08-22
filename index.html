@@ -37,18 +37,18 @@
     pageSize: 20,
     language: "en",
     selectionMode: 'single',
-    facets: {
-      color: {
-        name: "Color",
-        filter: "variants.attributes.color.key",
-        limit: 5
-      },
-      designer: {
-        name: "Designer",
-        filter: "variants.attributes.designer.key",
-        limit: 5
-      }
-    },
+    // facets: {
+    //   color: {
+    //     name: "Color",
+    //     filter: "variants.attributes.color.key",
+    //     limit: 5
+    //   },
+    //   designer: {
+    //     name: "Designer",
+    //     filter: "variants.attributes.designer.key",
+    //     limit: 5
+    //   }
+    // },
     handlers: {
       onSelect: (items) => {
         console.log('selected ', items);

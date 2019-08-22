@@ -111,7 +111,7 @@ class CTPicker {
           // Add
           let saveButton = document.getElementById("ct_saveButton");
           // Hide the OK button when nothing selected
-          saveButton.style.display = "none";
+          // saveButton.style.display = "none";
 
           if (self.options.handlers && self.options.handlers.onSelect) {
             saveButton.onclick = () => {
@@ -274,8 +274,9 @@ class CTPicker {
     }
 
     if (self.selected) {
-      if (self.selected.indexOf(id) > -1) {
-        self.selected.pop(self.selected.indexOf(id), 1);
+      let idx = self.selected.indexOf(id);
+      if (idx > -1) {
+        self.selected.splice(idx, 1);
       } else {
         self.selected.push(id);
       }
@@ -334,16 +335,30 @@ class CTPicker {
    */
   _getSelectedItems() {
     let self = this;
-    return new Promise((resolve, reject) => {
-      let selected = self.selected.map((id) => {
-        return self._findById(id).then((item) => {
-          return item;
-        });
-      });
 
-      Promise.all(selected).then((data) => {
-        resolve(data);
-      })
+    // Loop over all
+    // TODO: Change parent
+
+    return new Promise((resolve, reject) => {
+      let elements = self.containerElement.querySelectorAll('div[data-role="action"]');
+
+      if (elements) {
+
+        let selected = [];
+
+        elements.forEach((elem) => {
+          if (elem.hasAttribute("data-selected")) {
+            let id = elem.getAttribute('data-id');
+            selected.push(self._findById(id).then((item) => {
+              return item;
+            }));
+          }
+        });
+
+        Promise.all(selected).then((data) => {
+          resolve(data);
+        })
+      }
     });
   }
 
@@ -477,7 +492,7 @@ class CTPicker {
 
           // Get the id
           let id = b.getAttribute("data-id");
-          self.select(id);
+          // self.select(id);
 
           // Toggle the selected
           if (b.hasAttribute("data-selected")) {

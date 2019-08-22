@@ -33,9 +33,10 @@
       },
       apiUri: 'https://api.commercetools.com'
     },
-    mode: 'embedded',
+    mode: 'dialog',
     pageSize: 20,
     language: "en",
+    selectionMode: 'single',
     facets: {
       color: {
         name: "Color",
@@ -47,14 +48,23 @@
         filter: "variants.attributes.designer.key",
         limit: 5
       }
+    },
+    handlers: {
+      onSelect: (items) => {
+        console.log('selected ', items);
+      },
+      onCancel: () => {
+        console.log('Cancelled')
+      }
     }
   };
 
   let ctPicker = new CTPicker(pickerOptions, 'container');
+  // TODO: init should show with embedded
   ctPicker.init();
 
   function openPicker() {
-    ctPicker.show('embedded').then((data) => {
+    ctPicker.show().then((data) => {
       console.log(data);
     }).catch((msg) => {
       if (msg === 'cancel') {

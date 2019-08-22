@@ -253,7 +253,29 @@
 
 <script id="categoryItem" type="text/x-handlebars-template">
     <div>{{results.length}} results found</div>
-    <div class="productList">
+    <div class="categoryList">
+        <!--<ul id="myUL">-->
+            <!--<li><span class="caret">Beverages</span>-->
+                <!--<ul class="nested">-->
+                    <!--<li>Water</li>-->
+                    <!--<li>Coffee</li>-->
+                    <!--<li><span class="caret">Tea</span>-->
+                        <!--<ul class="nested">-->
+                            <!--<li>Black Tea</li>-->
+                            <!--<li>White Tea</li>-->
+                            <!--<li><span class="caret">Green Tea</span>-->
+                                <!--<ul class="nested">-->
+                                    <!--<li>Sencha</li>-->
+                                    <!--<li>Gyokuro</li>-->
+                                    <!--<li>Matcha</li>-->
+                                    <!--<li>Pi Lo Chun</li>-->
+                                <!--</ul>-->
+                            <!--</li>-->
+                        <!--</ul>-->
+                    <!--</li>-->
+                <!--</ul>-->
+            <!--</li>-->
+        <!--</ul>-->
         {{#each results}}
         <div class="product" data-role="action" data-id="{{id}}">
             <div data-role="image" class="thumbnail">

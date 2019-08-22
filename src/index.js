@@ -4,7 +4,7 @@ import {createClient} from '@commercetools/sdk-client';
 import {createAuthMiddlewareForClientCredentialsFlow} from '@commercetools/sdk-middleware-auth';
 import {createRequestBuilder, features} from '@commercetools/api-request-builder';
 import {createHttpMiddleware} from "@commercetools/sdk-middleware-http";
-import {compile} from "handlebars";
+import Handlebars from "handlebars";
 
 /**
  * This class provides access to the commercetools picker
@@ -12,6 +12,8 @@ import {compile} from "handlebars";
 class CTPicker {
 
   constructor(options, containerElementID) {
+
+    let self = this;
 
     this.options = options;
 
@@ -45,8 +47,22 @@ class CTPicker {
       }
 
       // Do some other checks
-
     }
+
+    // TODO: Setup some handlebars helpers
+    Handlebars.registerHelper({
+      shouldShow: function(key) {
+        // if (self.options) {
+        //   if (self.options.displayOptions) {
+        //     return (self.options.displayOptions[key] ? self.options.displayOptions[key] : false);
+        //   }
+        // }
+      },
+      hasValues: function(thing) {
+
+      }
+    });
+
 
     try {
       if (typeof containerElementID === 'string' || containerElementID instanceof String) {
@@ -64,9 +80,9 @@ class CTPicker {
     let self = this;
 
     return new Promise((resolve, reject) => {
+
       if (self.options.selected) {
         // TODO: Handle this properly
-        // This is when mode = 'hybrid'
       }
 
       // Add the contents to the element
@@ -224,7 +240,6 @@ class CTPicker {
         self._toggle();
         break;
     }
-
 
     return promise;
   }
@@ -397,7 +412,7 @@ class CTPicker {
   _getTemplate(id) {
 
     let tmpl = document.getElementById(id).innerHTML;
-    return compile(tmpl);
+    return Handlebars.compile(tmpl);
   }
 
   /**
@@ -539,7 +554,7 @@ class CTPicker {
 
       // Add the other options
       // productQuery.where(freetextSearch, ((self.options.language) ? self.options.language : "en"));
-      productQuery.perPage((self.options.pageSize) ? self.options.pageSize : 20);
+      // productQuery.perPage((self.options.pageSize) ? self.options.pageSize : 20);
 
       let productRequest = {
         uri: productQuery.build(),

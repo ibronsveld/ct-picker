@@ -133,7 +133,7 @@ class CTPicker {
                       self._toggle();
                       break;
                   }
-                  self._getSelectedItems().then((data) => {
+                  self.getSelectedItems().then((data) => {
                     self.options.handlers.onSelect(data);
                   })
                 }
@@ -147,7 +147,7 @@ class CTPicker {
                   }
 
                   if (self.resolveFn) {
-                    self._getSelectedItems().then((data) => {
+                    self.getSelectedItems().then((data) => {
                       self.resolveFn(data);
                     })
                   } else {
@@ -229,6 +229,52 @@ class CTPicker {
     return promise;
   }
 
+  /**
+   * Returns the selected items
+   * @returns {Promise<any>} Promise that, when resolved, returns the selected items
+   */
+  getSelectedItems() {
+    let self = this;
+
+    // Loop over all
+    // TODO: Change parent?
+
+    return new Promise((resolve, reject) => {
+      let elements = self.containerElement.querySelectorAll('div[data-role="action"]');
+
+      if (elements) {
+
+        let selected = [];
+
+        elements.forEach((elem) => {
+          if (elem.hasAttribute("data-selected")) {
+            let id = elem.getAttribute('data-id');
+            selected.push(self._findById(id).then((item) => {
+              return item;
+            }));
+          }
+        });
+
+        Promise.all(selected).then((data) => {
+          resolve(data);
+        })
+      }
+    });
+  }
+
+  clear() {
+
+    let self = this;
+    if (self.containerElement) {
+      while (self.containerElement.firstChild) {
+        self.containerElement.removeChild(self.containerElement.firstChild);
+      }
+    }
+
+    // TODO: fix
+    self.selected = undefined;
+    self.results = undefined;
+  }
   // /**
   //  * Shows the picker in a different mode
   //  * @returns {Promise<any>}
@@ -343,39 +389,6 @@ class CTPicker {
     self.containerElement.appendChild(wrapper);
   }
 
-  /**
-   * Returns the selected items
-   * @returns {Promise<any>} Promise that, when resolved, returns the selected items
-   * @private
-   */
-  _getSelectedItems() {
-    let self = this;
-
-    // Loop over all
-    // TODO: Change parent
-
-    return new Promise((resolve, reject) => {
-      let elements = self.containerElement.querySelectorAll('div[data-role="action"]');
-
-      if (elements) {
-
-        let selected = [];
-
-        elements.forEach((elem) => {
-          if (elem.hasAttribute("data-selected")) {
-            let id = elem.getAttribute('data-id');
-            selected.push(self._findById(id).then((item) => {
-              return item;
-            }));
-          }
-        });
-
-        Promise.all(selected).then((data) => {
-          resolve(data);
-        })
-      }
-    });
-  }
 
   /**
    * Loads a template by ID

@@ -34,6 +34,7 @@
     mode: 'embedded',
     pageSize: 20,
     language: "en",
+    selectionMode: 'single',
     facets: {
       color: {
         name: "Color",
@@ -45,6 +46,14 @@
         filter: "variants.attributes.designer.key",
         limit: 5
       }
+    },
+    handlers: {
+      onSelect: (items) => {
+        console.log('selected ', items);
+      },
+      onCancel: () => {
+        console.log('Cancelled')
+      }
     }
   };
 
@@ -52,7 +61,7 @@
   ctPicker.init();
 
   setTimeout(() => {
-    ctPicker.show('embedded').then((data) => {
+    ctPicker.show().then((data) => {
       console.log(data);
     }).catch((msg) => {
       if (msg === 'cancel') {

@@ -37,6 +37,7 @@
     pageSize: 20,
     language: "en",
     selectionMode: 'single',
+    pickerMode: 'category',
     // facets: {
     //   color: {
     //     name: "Color",
@@ -59,7 +60,7 @@
     }
   };
 
-  let ctPicker = new CTPicker(pickerOptions, 'container');
+  let ctPicker = new CTPicker(pickerOptions, document.getElementById('container'));
   // TODO: init should show with embedded
   ctPicker.init();
 

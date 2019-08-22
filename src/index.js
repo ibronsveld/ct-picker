@@ -7,7 +7,7 @@ import {createHttpMiddleware} from "@commercetools/sdk-middleware-http";
 import {compile} from "handlebars";
 
 /**
- * This class provides access to the commercetools product picker
+ * This class provides access to the commercetools picker
  */
 class CTPicker {
 
@@ -49,7 +49,12 @@ class CTPicker {
     }
 
     try {
-      this.containerElement = document.getElementById(containerElementID);
+      if (typeof containerElementID === 'string' || containerElementID instanceof String) {
+        this.containerElement = document.getElementById(containerElementID);
+      } else {
+        this.containerElement = containerElementID;
+      }
+
     } catch (err) {
       console.error("Error selecting container element", err);
     }
@@ -265,28 +270,28 @@ class CTPicker {
   //   return promise;
   // }
 
-  select(id) {
-    // Check if we have it in the list
-    let self = this;
-
-    if (!self.selected) {
-      self.selected = [];
-    }
-
-    if (self.selected) {
-      let idx = self.selected.indexOf(id);
-      if (idx > -1) {
-        self.selected.splice(idx, 1);
-      } else {
-        self.selected.push(id);
-      }
-    }
-
-    if (self.selected.length > 0) {
-      let saveButton = document.getElementById("ct_saveButton");
-      saveButton.style.display = "unset";
-    }
-  }
+  // select(id) {
+  //   // Check if we have it in the list
+  //   let self = this;
+  //
+  //   if (!self.selected) {
+  //     self.selected = [];
+  //   }
+  //
+  //   if (self.selected) {
+  //     let idx = self.selected.indexOf(id);
+  //     if (idx > -1) {
+  //       self.selected.splice(idx, 1);
+  //     } else {
+  //       self.selected.push(id);
+  //     }
+  //   }
+  //
+  //   if (self.selected.length > 0) {
+  //     let saveButton = document.getElementById("ct_saveButton");
+  //     saveButton.style.display = "unset";
+  //   }
+  // }
 
   /**
    * Generates the dialog and adds the appropriate click handlers
@@ -431,6 +436,19 @@ class CTPicker {
    */
   _doSearch() {
     let self = this;
+    switch (self.options.pickerMode) {
+      case 'category':
+        self._doCategorySearch();
+        break;
+
+      default:
+        self._doProductSearch();
+        break;
+    }
+  }
+
+  _doProductSearch() {
+    let self = this;
     if (self._requestBuilder) {
 
       //let productQuery = self._requestBuilder.productProjectionsSearch.text("bag", "en").build(); //= features.search;  //= {value: 'bag', language: 'en'} //self._requestBuilder.products.build();
@@ -438,6 +456,8 @@ class CTPicker {
       // TODO: Select Categories as well??
 
       // TODO: Create the facet & filter state
+
+
       // Loop through all the controls
       let freetextSearch = document.getElementById("searchTerm").value;
 
@@ -471,12 +491,59 @@ class CTPicker {
     }
   }
 
+  _doCategorySearch() {
+    let self = this;
+    if (self._requestBuilder) {
+
+      //let productQuery = self._requestBuilder.productProjectionsSearch.text("bag", "en").build(); //= features.search;  //= {value: 'bag', language: 'en'} //self._requestBuilder.products.build();
+
+      // TODO: Select Categories as well??
+
+      // TODO: Create the facet & filter state
+
+
+      // Loop through all the controls
+      let freetextSearch = document.getElementById("searchTerm").value;
+
+      let productQuery = self._requestBuilder.categories;
+      // First we set the basic settings
+      // if (self.options.facets) {
+      //   let facetKeys = Object.keys(self.options.facets);
+      //   facetKeys.forEach((key) => {
+      //     let item = self.options.facets[key];
+      //     productQuery.facet(item.filter + " as " + key);
+      //   });
+      // }
+
+      // Add the other options
+      // productQuery.where(freetextSearch, ((self.options.language) ? self.options.language : "en"));
+      productQuery.perPage((self.options.pageSize) ? self.options.pageSize : 20);
+
+      let productRequest = {
+        uri: productQuery.build(),
+        method: 'GET'
+      };
+
+      console.log(productRequest.uri);
+
+      // Do a search
+      self._doRequest(productRequest).then((response) => {
+        if (response.body && response.body.results) {
+          self._updateTemplateContext(response.body.results, response.body.facets);
+          // console.log(response.body.results);
+          self._printResults();
+        }
+      });
+    }
+  }
+
   _printResults() {
     //
     let self = this;
     self._clearResults();
 
     // HANDLE PRODUCTS
+
     let productTemplate = self._getTemplate("productItem");
     let productHTML = productTemplate(self.context);
 
@@ -489,10 +556,6 @@ class CTPicker {
     buttons.forEach((b) => {
       b.addEventListener('click', () => {
         if (b.hasAttribute("data-id")) {
-
-          // Get the id
-          let id = b.getAttribute("data-id");
-          // self.select(id);
 
           // Toggle the selected
           if (b.hasAttribute("data-selected")) {

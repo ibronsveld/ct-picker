@@ -62,7 +62,18 @@
 
   let ctPicker = new CTPicker(pickerOptions, document.getElementById('container'));
   // TODO: init should show with embedded
-  ctPicker.init();
+  ctPicker.init().then(() => {
+    ctPicker.show().then((data) => {
+      console.log(data);
+    }).catch((msg) => {
+      if (msg === 'cancel') {
+        console.log("user cancelled the dialog without selecting any items");
+      } else {
+        console.error(msg);
+      }
+    });
+  });
+
 
   function openPicker() {
     ctPicker.show().then((data) => {

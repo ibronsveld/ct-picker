@@ -63,25 +63,30 @@ class CTPicker {
   init() {
     let self = this;
 
-    if (self.options.selected) {
-      // TODO: Handle this properly
-      // This is when mode = 'hybrid'
-    }
+    return new Promise((resolve, reject) => {
+      if (self.options.selected) {
+        // TODO: Handle this properly
+        // This is when mode = 'hybrid'
+      }
 
-    // Add the contents to the element
-    if (self.containerElement) {
-      // Load the template from the URL
-      // TODO: How do we handle this in production?
-      //let url = "picker.html";
-      let url = "https://ct-merchant-test.herokuapp.com/picker.html";
-      fetch(url).then((response) => {
-        response.text().then((modalUIData) => {
-          // Adds the HTML scripts to the page for use with Handlebars
-          self.containerElement.innerHTML = modalUIData;
-          self.UIgenerated = false;
-        })
-      })
-    }
+      // Add the contents to the element
+      if (self.containerElement) {
+        // Load the template from the URL
+        // TODO: How do we handle this in production?
+        //let url = "picker.html";
+        let url = "https://ct-merchant-test.herokuapp.com/picker.html";
+        fetch(url).then((response) => {
+          response.text().then((modalUIData) => {
+            // Adds the HTML scripts to the page for use with Handlebars
+            self.containerElement.innerHTML = modalUIData;
+            self.UIgenerated = false;
+            resolve(true);
+          })
+        }).catch((err) => {
+          reject(err);
+        });
+      }
+    });
   }
 
   /**
@@ -374,6 +379,7 @@ class CTPicker {
    * @private
    */
   _getTemplate(id) {
+
     let tmpl = document.getElementById(id).innerHTML;
     return compile(tmpl);
   }

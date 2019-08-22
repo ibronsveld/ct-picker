@@ -243,9 +243,7 @@ class CTPicker {
       let elements = self.containerElement.querySelectorAll('div[data-role="action"]');
 
       if (elements) {
-
         let selected = [];
-
         elements.forEach((elem) => {
           if (elem.hasAttribute("data-selected")) {
             let id = elem.getAttribute('data-id');
@@ -567,8 +565,12 @@ class CTPicker {
     self._clearResults();
 
     // HANDLE PRODUCTS
-
     let productTemplate = self._getTemplate("productItem");
+
+    if (self.options.pickerMode === 'category') {
+      let productTemplate = self._getTemplate("categoryItem");
+    }
+
     let productHTML = productTemplate(self.context);
 
     // Use handlebars to generate the HTML
@@ -580,6 +582,10 @@ class CTPicker {
     buttons.forEach((b) => {
       b.addEventListener('click', () => {
         if (b.hasAttribute("data-id")) {
+
+          if (self.options.selectionMode === 'single') {
+            self._unselectAll();
+          }
 
           // Toggle the selected
           if (b.hasAttribute("data-selected")) {
@@ -597,6 +603,14 @@ class CTPicker {
 
     let facetHTML = facetTemplate(self.context);
     filterList.innerHTML = facetHTML;
+  }
+
+  _unselectAll() {
+    let list = document.getElementById('productListContainer');
+    let buttons = list.querySelectorAll('div[data-selected="true"]');
+    buttons.forEach((b) => {
+      b.removeAttribute("data-selected");
+    });
   }
 
   _updateTemplateContext(products, facets) {

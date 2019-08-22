@@ -20,10 +20,10 @@ yarn start
   var pickerOptions = {
     config: {
       authUri: 'https://auth.commercetools.com',
-      projectKey: 'ivos-personal-project',
+      projectKey: '<project>',
       credentials: {
-        clientId: 'GVijKg5WUzUjZwO8v2FJNv_i',
-        clientSecret: 'MoVEzWL2uAEj9Y0Zoy1F9dTIBPkXDUlk'
+        clientId: '<client>',
+        clientSecret: '<secret>'
       },
       apiUri: 'https://api.commercetools.com'
     },

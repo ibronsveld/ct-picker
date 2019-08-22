@@ -71,10 +71,10 @@ class CTPicker {
 
       // Add the contents to the element
       if (self.containerElement) {
+        let url = "https://ct-merchant-test.herokuapp.com/picker.html";
         // Load the template from the URL
         // TODO: How do we handle this in production?
-        //let url = "picker.html";
-        let url = "https://ct-merchant-test.herokuapp.com/picker.html";
+        //url = "picker.html";
         fetch(url).then((response) => {
           response.text().then((modalUIData) => {
             // Adds the HTML scripts to the page for use with Handlebars
@@ -312,7 +312,7 @@ class CTPicker {
       let dialog = self._getTemplate('ct_PickerDialogTemplate');
 
       // TODO: ADD TRANSLATIONS HERE
-      let finalHTML = dialog({});
+      let finalHTML = dialog(self.options);
       let wrapper = document.createElement('div');
       wrapper.id = "ct_PickerDialogWrapper";
       wrapper.innerHTML = finalHTML;
@@ -331,7 +331,7 @@ class CTPicker {
     let dialog = self._getTemplate('ct_PickerTemplate');
 
     // TODO: ADD TRANSLATIONS HERE
-    let finalHTML = dialog({});
+    let finalHTML = dialog(self.options);
     let wrapper = document.createElement('div');
     wrapper.id = "ct_PickerWrapper";
     wrapper.innerHTML = finalHTML;

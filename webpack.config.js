@@ -30,7 +30,7 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({  // Also generate a test.html
       filename: 'picker.html',
-      template: 'src/picker.html'
+      template: 'picker.html'
     })
   ],
   output: {

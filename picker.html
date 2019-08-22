@@ -73,7 +73,7 @@
         grid-auto-flow: row;
         padding-top: 10px;
         overflow-y: auto;
-        height:70%;
+        height: 70%;
     }
 
     .sidebar .option {
@@ -138,7 +138,7 @@
     .productDetails .name {
         max-width: 100%;
         overflow: hidden;
-        white-space: nowrap;      /*keep text on one line */
+        white-space: nowrap; /*keep text on one line */
         text-overflow: ellipsis;
         font-size: smaller;
     }
@@ -146,13 +146,13 @@
     .productDetails .sku {
         max-width: 100%;
         overflow: hidden;
-        white-space: nowrap;      /*keep text on one line */
+        white-space: nowrap; /*keep text on one line */
         text-overflow: ellipsis;
         font-size: smaller;
     }
 
     .thumbnail {
-        position:relative;
+        position: relative;
         width: 150px;
         min-height: 100px;
         overflow: hidden;
@@ -166,9 +166,9 @@
         height: 75px;
         width: auto;
 
-        -webkit-transform: translate(-50%,-50%);
-        -ms-transform: translate(-50%,-50%);
-        transform: translate(-50%,-50%);
+        -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
     }
 
     .facetBadge {
@@ -248,22 +248,41 @@
 <script id="productItem" type="text/x-handlebars-template">
     <div>{{results.length}} results found</div>
     <div class="productList">
-    {{#each results}}
-    <div class="product" data-role="action" data-id="{{id}}">
-        <div data-role="image" class="thumbnail">
-            <img src="{{masterVariant.images.0.url}}"/>
+        {{#each results}}
+        <div class="product" data-role="action" data-id="{{id}}">
+            <div data-role="image" class="thumbnail">
+                <img src="{{masterVariant.images.0.url}}"/>
+            </div>
+            <div class="productDetails" data-role="action" data-id="{{id}}">
+                <div class="sku">{{masterVariant.sku}}</div>
+                <div class="name">{{name.en}}</div>
+                <!--<div data-role="price"></div>-->
+            </div>
         </div>
-        <div class="productDetails" data-role="action" data-id="{{id}}">
-            <div class="sku">{{masterVariant.sku}}</div>
-            <div class="name">{{name.en}}</div>
-            <!--<div data-role="price"></div>-->
-        </div>
+        {{/each}}
     </div>
-    {{/each}}
+</script>
+
+<script id="categoryItem" type="text/x-handlebars-template">
+    <div>{{results.length}} results found</div>
+    <div class="productList">
+        {{#each results}}
+        <div class="product" data-role="action" data-id="{{id}}">
+            <div data-role="image" class="thumbnail">
+                <!--<img src="{{masterVariant.images.0.url}}"/>-->
+            </div>
+            <div class="productDetails" data-role="action" data-id="{{id}}">
+                <!--<div class="sku">{{masterVariant.sku}}</div>-->
+                <div class="name">{{name.en}}</div>
+                <!--<div data-role="price"></div>-->
+            </div>
+        </div>
+        {{/each}}
     </div>
 </script>
 
 <script id="ct_FacetTemplate" type="text/x-handlebars-template">
+    {{#if facets}}
     <b>Refine your selection</b>
     {{#each facets}}
     <div class="option">
@@ -273,6 +292,7 @@
         {{/each}}
     </div>
     {{/each}}
+    {{/if}}
 </script>
 
 <script id="ct_PickerDialogTemplate" type="text/x-handlebars-template">
@@ -280,7 +300,9 @@
         <!--<div class="popup" id="popup">-->
         <div class="wrapper">
             <div class="header">
+                {{#if displayOptions.showHeader}}
                 <h1>Pick a product</h1>
+                {{/if}}
             </div>
             <div class="sidebar">
                 <div class="option">
@@ -288,7 +310,7 @@
                         <b>Search for</b>
                     </div>
                     <div>
-                        <input type="text" id="searchTerm" class="textInput" />
+                        <input type="text" id="searchTerm" class="textInput"/>
                     </div>
                 </div>
                 <div class="option">
@@ -306,11 +328,18 @@
             </div>
             <div class="bottomBar">
                 <div style="text-align: center;width:100%;padding-right:10px">
+                    {{#if displayOptions.showPaging}}
                     PAGING
+                    {{/if}}
                 </div>
                 <div style="text-align: right;width:100%;padding-right:10px">
+                    {{#if displayOptions.showSelectButton}}
                     <button class="button" id="ct_saveButton">Save</button>
+                    {{/if}}
+                    {{#if displayOptions.showCancelButton}}
                     <button class="button" id="ct_cancelButton">Cancel</button>
+                    {{/if}}
+                </div>
                 </div>
 
             </div>
@@ -320,16 +349,20 @@
 
 <script id="ct_PickerTemplate" type="text/x-handlebars-template">
     <div class="wrapper">
+
         <div class="header">
+            {{#if displayOptions.showHeader}}
             <h1>Pick a product</h1>
+            {{/if}}
         </div>
+
         <div class="sidebar">
             <div class="option">
                 <div>
                     <b>Search for</b>
                 </div>
                 <div>
-                    <input type="text" id="searchTerm" class="textInput" />
+                    <input type="text" id="searchTerm" class="textInput"/>
                 </div>
             </div>
             <div class="option">
@@ -347,11 +380,17 @@
         </div>
         <div class="bottomBar">
             <div style="text-align: center;width:100%;padding-right:10px">
+                {{#if displayOptions.showPaging}}
                 PAGING
+                {{/if}}
             </div>
             <div style="text-align: right;width:100%;padding-right:10px">
+                {{#if displayOptions.showSelectButton}}
                 <button class="button" id="ct_saveButton">Save</button>
+                {{/if}}
+                {{#if displayOptions.showCancelButton}}
                 <button class="button" id="ct_cancelButton">Cancel</button>
+                {{/if}}
             </div>
 
         </div>

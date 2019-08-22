@@ -33,11 +33,17 @@
       },
       apiUri: 'https://api.commercetools.com'
     },
-    mode: 'dialog',
+    mode: "embedded",
     pageSize: 20,
     language: "en",
-    selectionMode: 'single',
+    selectionMode: "single",
     pickerMode: 'category',
+    displayOptions: {
+      showHeader: false,
+      showPaging: false,
+      showCancelButton: false,
+      showSelectButton: true
+    },
     // facets: {
     //   color: {
     //     name: "Color",

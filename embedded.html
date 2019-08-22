@@ -65,9 +65,7 @@
   };
 
   let ctPicker = new CTPicker(pickerOptions, 'container');
-  ctPicker.init();
-
-  setTimeout(() => {
+  ctPicker.init().then(() => {
     ctPicker.show().then((data) => {
       console.log(data);
     }).catch((msg) => {
@@ -77,7 +75,8 @@
         console.error(msg);
       }
     });
-  }, 500)
+  });
+
 
 </script>
 </html>

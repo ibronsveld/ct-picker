@@ -5,6 +5,8 @@ import {createAuthMiddlewareForClientCredentialsFlow} from '@commercetools/sdk-m
 import {createRequestBuilder, features} from '@commercetools/api-request-builder';
 import {createHttpMiddleware} from "@commercetools/sdk-middleware-http";
 import Handlebars from "handlebars";
+import {GraphQLQuery, GraphQLQueryBuilder} from "./GraphQLConnector";
+
 
 /**
  * This class provides access to the commercetools picker
@@ -14,55 +16,58 @@ class CTPicker {
   constructor(options, containerElementID) {
 
     let self = this;
-
     this.options = options;
 
     // Step 1: Parse the options
-    if (this.options) {
-      // Set
-      if (this.options.config) {
-        // We have a token, otherwise we have to load the login
-        this._ctpClient = createClient({
-          // The order of the middlewares is important !!!
-          middlewares: [
-            createAuthMiddlewareForClientCredentialsFlow({
-              host: this.options.config.authUri,
-              projectKey: this.options.config.projectKey,
-              credentials: {
-                clientId: this.options.config.credentials.clientId,
-                clientSecret: this.options.config.credentials.clientSecret
-              }
-            }, fetch),
-            createHttpMiddleware({host: this.options.config.apiUri}, fetch)
-          ]
-        });
-        this._requestBuilder = createRequestBuilder({projectKey: this.options.config.projectKey});
-      } else {
-        throw ("Unable to create client: No configuration provided");
-      }
+    if (!this.options) {
+      this.options = {};
 
-      // Set the operating mode
-      if (!this.options.mode) {
-        this.options.mode = 'dialog';
-      }
-
-      // Do some other checks
     }
 
-    // TODO: Setup some handlebars helpers
-    Handlebars.registerHelper({
-      shouldShow: function(key) {
-        // if (self.options) {
-        //   if (self.options.displayOptions) {
-        //     return (self.options.displayOptions[key] ? self.options.displayOptions[key] : false);
-        //   }
-        // }
-      },
-      hasValues: function(thing) {
+    if (this.options.config) {
+      // We have a token, otherwise we have to load the login
+      this._ctpClient = createClient({
+        // The order of the middlewares is important !!!
+        middlewares: [
+          createAuthMiddlewareForClientCredentialsFlow({
+            host: this.options.config.authUri,
+            projectKey: this.options.config.projectKey,
+            credentials: {
+              clientId: this.options.config.credentials.clientId,
+              clientSecret: this.options.config.credentials.clientSecret
+            }
+          }, fetch),
+          createHttpMiddleware({host: this.options.config.graphQLUri}, fetch)
+        ]
+      });
+      this._requestBuilder = createRequestBuilder({
+        projectKey: this.options.config.projectKey,
+        customServices: {
+          graphql: {
+            type: 'graphql',
+            endpoint: '/graphql',
+            features: [features.query]
+          }
+        }
+      });
+    } else {
+      throw ("Unable to create client: No configuration provided");
+    }
 
+    // Set the operating mode
+    if (!this.options.mode) {
+      this.options.mode = 'dialog';
+    }
+
+
+    Handlebars.registerHelper('isDialog', (options) => {
+      if (self.options.mode === 'dialog') {
+        if (options.fn)
+          return options.fn(this);
       }
+      if (options.inverse)
+        return options.inverse(this);
     });
-
 
     try {
       if (typeof containerElementID === 'string' || containerElementID instanceof String) {
@@ -71,38 +76,12 @@ class CTPicker {
         this.containerElement = containerElementID;
       }
 
+      // Append the HTML from the picker template
+      this.htmlTemplate = require("../picker.html");
+
     } catch (err) {
       console.error("Error selecting container element", err);
     }
-  }
-
-  init() {
-    let self = this;
-
-    return new Promise((resolve, reject) => {
-
-      if (self.options.selected) {
-        // TODO: Handle this properly
-      }
-
-      // Add the contents to the element
-      if (self.containerElement) {
-        let url = "https://ct-merchant-test.herokuapp.com/picker.html";
-        // Load the template from the URL
-        // TODO: How do we handle this in production?
-        //url = "picker.html";
-        fetch(url).then((response) => {
-          response.text().then((modalUIData) => {
-            // Adds the HTML scripts to the page for use with Handlebars
-            self.containerElement.innerHTML = modalUIData;
-            self.UIgenerated = false;
-            resolve(true);
-          })
-        }).catch((err) => {
-          reject(err);
-        });
-      }
-    });
   }
 
   /**
@@ -118,21 +97,22 @@ class CTPicker {
       self.rejectFn = reject;
     });
 
-    // UI has not been generated yet, so ensure we generate the HTML and attach the correct handlers to the buttons
-    if (!self.UIgenerated) {
+    // First, add the HTML to the container element
+    if (self.containerElement) {
+      self.containerElement.innerHTML = self.htmlTemplate;
 
-      switch (mode || self.options.mode) {
-        case 'embedded':
-          self._generateEmbedded();
-          break;
-        case 'dialog':
-          self._generateDialog();
-          break;
-      }
-
-      // TODO REFACTOR
+      // Second, process the appropriate elements
       setTimeout(() => {
         try {
+
+          let script = self._getTemplate('ct_PickerDialogTemplate');
+
+          // TODO: ADD TRANSLATIONS TO OBJECT
+          let finalHTML = script(self.options);
+          let wrapper = document.createElement('div');
+          wrapper.id = "ct_PickerWrapper";
+          wrapper.innerHTML = finalHTML;
+          self.containerElement.appendChild(wrapper);
 
           // Add
           if (self.options.displayOptions) {
@@ -206,6 +186,7 @@ class CTPicker {
               }
             }
           }
+
           // TODO: Add the basic text search option
           let input = document.getElementById("searchTerm");
           input.addEventListener("keyup", function (event) {
@@ -230,15 +211,15 @@ class CTPicker {
         } catch (err) {
           console.error("Error creating dialog!", err);
         }
+
+
+        switch (mode || self.options.mode) {
+          case 'dialog':
+            self._toggle();
+            break;
+        }
       }, 500);
 
-      self.UIgenerated = true;
-    }
-
-    switch (mode || self.options.mode) {
-      case 'dialog':
-        self._toggle();
-        break;
     }
 
     return promise;
@@ -288,6 +269,14 @@ class CTPicker {
     self.selected = undefined;
     self.results = undefined;
   }
+
+  _handleEvent(eventKey, data) {
+
+    // This one
+
+
+  }
+
   // /**
   //  * Shows the picker in a different mode
   //  * @returns {Promise<any>}
@@ -363,47 +352,6 @@ class CTPicker {
   // }
 
   /**
-   * Generates the dialog and adds the appropriate click handlers
-   * @private
-   */
-  _generateDialog() {
-
-    let self = this;
-
-    let dialogWrapper = document.getElementById("ct_PickerDialogWrapper");
-    if (!dialogWrapper) {
-
-      let dialog = self._getTemplate('ct_PickerDialogTemplate');
-
-      // TODO: ADD TRANSLATIONS HERE
-      let finalHTML = dialog(self.options);
-      let wrapper = document.createElement('div');
-      wrapper.id = "ct_PickerDialogWrapper";
-      wrapper.innerHTML = finalHTML;
-      self.containerElement.appendChild(wrapper);
-    }
-  }
-
-  /**
-   * Generates the dialog and adds the appropriate click handlers
-   * @private
-   */
-  _generateEmbedded() {
-
-    let self = this;
-
-    let dialog = self._getTemplate('ct_PickerTemplate');
-
-    // TODO: ADD TRANSLATIONS HERE
-    let finalHTML = dialog(self.options);
-    let wrapper = document.createElement('div');
-    wrapper.id = "ct_PickerWrapper";
-    wrapper.innerHTML = finalHTML;
-    self.containerElement.appendChild(wrapper);
-  }
-
-
-  /**
    * Loads a template by ID
    * @param id The ID of the element to get the template from
    * @returns {HandlebarsTemplateDelegate<any>}
@@ -434,13 +382,18 @@ class CTPicker {
 
     // When the user clicks anywhere outside of the modal, close it
     let modal = document.getElementById("popup");
-    let open = modal.getAttribute("open");
-    if (!open) {
-      modal.setAttribute("open", "true");
-      let input = document.getElementById("searchTerm");
-      input.focus();
+    if (modal) {
+      let open = modal.getAttribute("open");
+      if (!open) {
+        modal.setAttribute("open", "true");
+        let input = document.getElementById("searchTerm");
+        input.focus();
+      } else {
+        modal.removeAttribute("open");
+      }
     } else {
-      modal.removeAttribute("open");
+      throw ("No dialog found");
+
     }
   }
 
@@ -693,6 +646,7 @@ class CTPicker {
 }
 
 // TODO: proper expose?
+//export default CTPicker;
 window.CTPicker = CTPicker;
 
 

@@ -31,14 +31,25 @@
         clientId: 'GVijKg5WUzUjZwO8v2FJNv_i',
         clientSecret: 'MoVEzWL2uAEj9Y0Zoy1F9dTIBPkXDUlk'
       },
-      apiUri: 'https://api.commercetools.com'
+      apiUri: 'https://api.commercetools.com',
+      graphQLUri: 'https://api.commercetools.com'
     },
     mode: "embedded",
     pageSize: 20,
     language: "en",
     selectionMode: "single",
-    pickerMode: "category",
+    pickerMode: "product",
     displayOptions: {
+      buttons: {
+        cancel: {
+          enabled: false,
+          text: "Save"
+        },
+        save: {
+          enabled: false,
+          text: "Save"
+        }
+      },
       showHeader: false,
       showPaging: false,
       showCancelButton: false,
@@ -68,17 +79,27 @@
 
   let ctPicker = new CTPicker(pickerOptions, document.getElementById('container'));
   // TODO: init should show with embedded
-  ctPicker.init().then(() => {
-    ctPicker.show().then((data) => {
-      console.log(data);
-    }).catch((msg) => {
-      if (msg === 'cancel') {
-        console.log("user cancelled the dialog without selecting any items");
-      } else {
-        console.error(msg);
-      }
-    });
-  });
+  // ctPicker.show().then((data) => {
+  //   console.log(data);
+  // }).catch((msg) => {
+  //   if (msg === 'cancel') {
+  //     console.log("user cancelled the dialog without selecting any items");
+  //   } else {
+  //     console.error(msg);
+  //   }
+  // });
+
+  // ctPicker.init().then(() => {
+  //   ctPicker.show().then((data) => {
+  //     console.log(data);
+  //   }).catch((msg) => {
+  //     if (msg === 'cancel') {
+  //       console.log("user cancelled the dialog without selecting any items");
+  //     } else {
+  //       console.error(msg);
+  //     }
+  //   });
+  // });
 
 
   function openPicker() {

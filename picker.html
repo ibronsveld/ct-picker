@@ -56,7 +56,7 @@
         grid-column: span 4;
         /*background-color: #00b39e;*/
         padding-left: 10px;
-        border-bottom: 1px solid black;
+        /*border-bottom: 1px solid black;*/
     }
 
     .sidebar {
@@ -306,7 +306,9 @@
 </script>
 
 <script id="ct_PickerDialogTemplate" type="text/x-handlebars-template">
+    {{#isDialog}}
     <dialog id="popup">
+    {{/isDialog}}
         <!--<div class="popup" id="popup">-->
         <div class="wrapper">
             <div class="header">
@@ -324,16 +326,14 @@
                     </div>
                 </div>
                 <div class="option">
-                    <button class="button fullWidth" id="ct_searchButton">Search</button>
+                    <button class="button fullWidth" id="ct_searchButton" data-event="search">Search</button>
                 </div>
                 <div class="panel" id="filterPanel">
 
                 </div>
             </div>
             <div class="containerArea">
-
                 <div id="productListContainer">
-
                 </div>
             </div>
             <div class="bottomBar">
@@ -344,17 +344,19 @@
                 </div>
                 <div style="text-align: right;width:100%;padding-right:10px">
                     {{#if displayOptions.showSelectButton}}
-                    <button class="button" id="ct_saveButton">Save</button>
+                    <button class="button" id="ct_saveButton" data-event="select">Save</button>
                     {{/if}}
                     {{#if displayOptions.showCancelButton}}
-                    <button class="button" id="ct_cancelButton">Cancel</button>
+                    <button class="button" id="ct_cancelButton" data-event="cancel">Cancel</button>
                     {{/if}}
                 </div>
                 </div>
 
             </div>
         </div>
+    {{#isDialog}}
     </dialog>
+    {{/isDialog}}
 </script>
 
 <script id="ct_PickerTemplate" type="text/x-handlebars-template">

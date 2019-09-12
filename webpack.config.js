@@ -33,6 +33,17 @@ module.exports = {
       template: 'picker.html'
     })
   ],
+  module: {
+    rules: [{
+      test: /\.html$/,
+      use: [ {
+        loader: 'html-loader',
+        options: {
+          minimize: false
+        }
+      }],
+    }]
+  },
   output: {
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist')

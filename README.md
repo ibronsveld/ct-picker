@@ -48,7 +48,7 @@ ctPicker.show().then((result) => {
 | uiLocale | Locale of the UI | String - "_en-US_" (default value)  |
 | selectionMode | Set selection mode | String - "_single_" (default value) or "_multiple_"
 | pickerMode | Set type of objects to pick. | String - "_product_" (default value) or "_category_"
-| handlers | Custom event handlers. | Object - { onSelect: (), onItemSelected: (), onItemDeselected: (), onCancel: () }
+| handlers | Custom event handlers. | Object - { onSelect: (items), onItemSelected: (item), onItemDeselected: (item), onCancel: () }
                                                          
 
 ### Example Configuration

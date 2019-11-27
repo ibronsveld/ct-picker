@@ -1,0 +1,14 @@
+{
+  "platform": {
+    "authUri": "https://auth.commercetools.com",
+    "apiUri": "https://api.commercetools.com",
+    "graphQLUri": "https://api.commercetools.com",
+    "mcUri": "https://mc.commercetools.com"
+  },
+  "uiLocale": "en-US",
+  "mode": "dialog",
+  "pageSize": 20,
+  "searchLanguage": "en",
+  "selectionMode": "single",
+  "pickerMode": "product"
+}

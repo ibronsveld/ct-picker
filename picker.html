@@ -1,21 +1,31 @@
-<!-- TODO: EMBED CSS, CREATE NAMESPACE-->
-
 <style>
-    dialog {
+
+    #ctp-wrapper {
+        all: unset;
+        color: #1a1a1a;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 13px;
+    }
+
+    #ctp-wrapper dialog {
         padding: 0;
         border: 0;
         border-radius: 0.6rem;
         box-shadow: 0 0 1em black;
-        /*width: 80vh;*/
         font-family: 'Open Sans', sans-serif;
     }
 
-    dialog::backdrop {
+    #ctp-wrapper dialog::backdrop {
         /* make the backdrop a semi-transparent black */
         background-color: rgba(0, 0, 0, 0.4);
     }
 
-    dialog h1 {
+    .ctp-container {
+        width: 100%;
+        /*border: 1px solid black;*/
+    }
+
+    .ctp-h1 {
         display: block;
         margin-block-start: 0.67em;
         margin-block-end: 0.67em;
@@ -28,7 +38,7 @@
     }
 
 
-    dialog h2 {
+    .ctp-h2 {
         display: block;
         margin-block-start: 0.67em;
         margin-block-end: 0.67em;
@@ -40,185 +50,171 @@
         margin: 0px;
     }
 
-    .wrapper {
+    .ctp-row {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        /*grid-auto-flow: column;*/
-        /*grid-template-rows: 40px 100px 40px;*/
-        /*grid-auto-flow: column;*/
-        /*grid-auto-rows: 300px;*/
-        /*grid-gap: 15px;*/
-        /*grid-template-rows: repeat(1, 1fr);*/
+        grid-template-rows: repeat(1, 1fr);
+        grid-template-columns: repeat(8, 1fr);
     }
 
-    .header {
-        display: flex;
-        grid-column: span 4;
-        /*background-color: #00b39e;*/
-        padding-left: 10px;
-        /*border-bottom: 1px solid black;*/
+    .ctp-col-1 {
+        grid-column-end: span 1;
     }
 
-    .sidebar {
-        display: block;
-        grid-row: span 2;
-        background-color: #eef4f6;
-        height: 70vh;
-        padding-left: 10px;
+    .ctp-push-col-1 {
+        grid-column-start: 1;
     }
 
-    .sidebar .panel {
-        display: grid;
-        grid-template-columns: repeat(1, 1fr);
-        grid-auto-flow: row;
-        padding-top: 10px;
+    .ctp-col-2 {
+        grid-column-end: span 2;
+    }
+
+    .ctp-push-col-2 {
+        grid-column-start: 2;
+    }
+
+    .ctp-col-3 {
+        grid-column-end: span 3;
+    }
+
+    .ctp-push-col-3 {
+        grid-column-start: 3;
+    }
+
+    .ctp-col-4 {
+        grid-column-end: span 4;
+    }
+
+    .ctp-push-col-4 {
+        grid-column-start: 4;
+    }
+
+    .ctp-col-5 {
+        grid-column-end: span 5;
+    }
+
+    .ctp-push-col-5 {
+        grid-column-start: 5;
+    }
+
+    .ctp-col-6 {
+        grid-column-end: span 6;
+    }
+
+    .ctp-push-col-6 {
+        grid-column-start: 6;
+    }
+
+    .ctp-col-7 {
+        grid-column-end: span 7;
+    }
+
+    .ctp-push-col-7 {
+        grid-column-start: 7;
+    }
+
+    .ctp-col-8 {
+        grid-column-end: span 8;
+    }
+
+    .ctp-push-col-8 {
+        grid-column-start: 8;
+    }
+
+
+    .ctp-list-container {
         overflow-y: auto;
-        height: 70%;
-    }
-
-    .sidebar .option {
-        width: 100%;
-        padding-bottom: 15px;
-    }
-
-    .sidebar .panel .option .facet {
-        /*display: grid;*/
-        /*grid-template-columns: repeat(2, 1fr);*/
-        /*grid-auto-flow: column;*/
-    }
-
-    .containerArea {
-        display: block;
-        grid-column: span 3;
-        height: 70vh;
-    }
-
-    .bottomBar {
-        display: flex;
-        grid-column: span 4;
-        padding-bottom: 5px;
-        padding-top: 5px;
-    }
-
-    #productListContainer {
-        overflow-y: auto;
-        height: 100%;
+        height: 500px;
         padding-left: 10px;
-        /*width:100%*/
         padding-right: 25px;
         min-width: 650px;
         padding-top: 5px;
     }
 
-    .productList {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        grid-gap: 15px;
+    .ctp-header-column {
+        background: rgb(33, 60, 69);
+        color: rgb(230, 230, 230);
+        height: 35px;
+        -webkit-box-align: center;
+        align-items: center;
+        padding-left: 5px;
+        border-bottom: 1px solid rgb(230, 230, 230);
+        padding-top: 5px;
     }
 
-    .product {
-        display: block;
-        height: 150px;
-        width: 150px;
-        border: 1px solid black;
+    .ctp-column {
+        border-right: 1px solid grey;
+        align-items: center;
+        border-bottom: 1px solid rgb(230, 230, 230);
+        border-right: 1px solid rgb(230, 230, 230);
+        padding-left: 5px;
+        padding-top: 5px;
     }
 
-    .product[data-selected="true"] {
-        background-color: #00b39e;
-        border: 2px solid black;
+
+    .ctp-row[data-selected="true"] {
+        border: 2px solid #00b39e;
     }
 
-    .productDetails {
-        grid-template-columns: repeat(1, 1fr);
-        grid-auto-flow: row;
-        display: grid;
-        padding-left: 5px
-    }
-
-    .productDetails .name {
-        max-width: 100%;
-        overflow: hidden;
-        white-space: nowrap; /*keep text on one line */
-        text-overflow: ellipsis;
-        font-size: smaller;
-    }
-
-    .productDetails .sku {
-        max-width: 100%;
-        overflow: hidden;
-        white-space: nowrap; /*keep text on one line */
-        text-overflow: ellipsis;
-        font-size: smaller;
-    }
-
-    .thumbnail {
+    .ctp-thumbnail {
         position: relative;
-        width: 150px;
-        min-height: 100px;
+        max-height: 70px;
         overflow: hidden;
         margin: 0 auto;
     }
 
-    .thumbnail img {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        height: 75px;
-        width: auto;
-
-        -webkit-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
+    .ctp-button-primary {
+        box-shadow: inset 0px 1px 0px 0px #497d76;
+        background: linear-gradient(to bottom, #00b39e 5%, #0da38f 100%);
+        background-color: #00b39e;
+        border: 1px solid #88c9c0;
+        color: #ffffff;
+        text-shadow: 0px 1px 0px #23756a;
     }
 
-    .button {
-        white-space: nowrap;
-        cursor: pointer;
-        -webkit-box-align: center;
-        align-items: center;
-        height: 32px;
-        display: inline-block;
-        box-shadow: rgba(0, 0, 0, 0.12) 0px -1px 1.5px 0px, rgba(0, 0, 0, 0.24) 0px 1px 1px 0px;
+    .ctp-button-primary:hover {
+        background: linear-gradient(to bottom, #0da38f 5%, #00b39e 100%);
+        background-color: #0da38f;
+    }
+
+    .ctp-button-light {
+        box-shadow: inset 0px 1px 0px 0px #ffffff;
+        background: linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+        background-color: #ffffff;
+        border: 1px solid #dcdcdc;
         color: rgb(26, 26, 26);
-        border-width: initial;
-        border-style: none;
-        border-color: initial;
-        border-image: initial;
-        background: none rgb(255, 255, 255);
-        outline: 0px;
-        margin: 0px;
-        font: inherit inherit inherit inherit inherit inherit inherit inherit;
-        padding: 0px 16px;
+        text-shadow: 0px 1px 0px #ffffff;
+    }
+
+    .ctp-button-light:hover {
+        background: linear-gradient(to bottom, #f6f6f6 5%, #ffffff 100%);
+        background-color: #f6f6f6;
+    }
+
+    .ctp-button {
         border-radius: 6px;
-        transition: background-color 80ms linear 0s, box-shadow 150ms ease-in-out 0s;
-    }
-
-    .fullWidth {
-        width: 90%;
-    }
-
-    .textInput {
-        -webkit-writing-mode: horizontal-tb !important;
-        text-rendering: auto;
-        color: initial;
-        letter-spacing: normal;
-        word-spacing: normal;
-        text-transform: none;
-        text-indent: 0px;
-        text-shadow: none;
         display: inline-block;
-        text-align: start;
-        -webkit-appearance: textfield;
+        cursor: pointer;
+        padding: 10px 24px;
+        text-decoration: none;
+        height: 16px;
+    }
+
+    .ctp-button:active {
+        position: relative;
+        top: 1px;
+    }
+
+    .ctp-category-product-label {
+        font-size: smaller;
+        color: rgb(153, 153, 153);
+    }
+
+
+    .ctp-search-input {
+        box-sizing: border-box;
+        display: inline-block;
+        width: 100%;
         background-color: white;
-        -webkit-rtl-ordering: logical;
-        cursor: text;
-        margin: 0em;
-        font: 400 11px system-ui;
-        padding: 1px;
-        border-width: 2px;
-        border-style: inset;
-        border-color: initial;
-        border-image: initial;
         border-radius: 6px;
         border-style: solid;
         border-width: 1px;
@@ -231,182 +227,173 @@
         box-shadow: none;
         -webkit-appearance: none;
     }
+
+    .ctp-filter-box {
+        background-color: #f2f2f2;
+        border-radius: 6px;
+        margin: 0 0 16px;
+        padding: 10px;
+    }
+
 </style>
 
-<script id="productItem" type="text/x-handlebars-template">
-    <div>{{results.length}} results found</div>
-    <div class="productList">
-        {{#each results}}
-        <div class="product" data-role="action" data-id="{{id}}">
-            <div data-role="image" class="thumbnail">
-                <img src="{{masterVariant.images.0.url}}"/>
-            </div>
-            <div class="productDetails" data-role="action" data-id="{{id}}">
-                <div class="sku">{{masterVariant.sku}}</div>
-                <div class="name">{{name.en}}</div>
-                <!--<div data-role="price"></div>-->
-            </div>
-        </div>
-        {{/each}}
-    </div>
-</script>
+<script id="ctp-product-item" type="text/x-handlebars-template">
 
-<script id="categoryItem" type="text/x-handlebars-template">
-    <div>{{results.length}} results found</div>
-    <div class="categoryList">
-        <!--<ul id="myUL">-->
-            <!--<li><span class="caret">Beverages</span>-->
-                <!--<ul class="nested">-->
-                    <!--<li>Water</li>-->
-                    <!--<li>Coffee</li>-->
-                    <!--<li><span class="caret">Tea</span>-->
-                        <!--<ul class="nested">-->
-                            <!--<li>Black Tea</li>-->
-                            <!--<li>White Tea</li>-->
-                            <!--<li><span class="caret">Green Tea</span>-->
-                                <!--<ul class="nested">-->
-                                    <!--<li>Sencha</li>-->
-                                    <!--<li>Gyokuro</li>-->
-                                    <!--<li>Matcha</li>-->
-                                    <!--<li>Pi Lo Chun</li>-->
-                                <!--</ul>-->
-                            <!--</li>-->
-                        <!--</ul>-->
-                    <!--</li>-->
-                <!--</ul>-->
-            <!--</li>-->
-        <!--</ul>-->
-        {{#each results}}
-        <div class="product" data-role="action" data-id="{{id}}">
-            <div data-role="image" class="thumbnail">
-                <!--<img src="{{masterVariant.images.0.url}}"/>-->
-            </div>
-            <div class="productDetails" data-role="action" data-id="{{id}}">
-                <!--<div class="sku">{{masterVariant.sku}}</div>-->
-                <div class="name">{{name.en}}</div>
-                <!--<div data-role="price"></div>-->
-            </div>
+    {{#each results}}
+    <div class="ctp-row" data-id="{{id}}" data-role="action">
+        <div class="ctp-col-1 ctp-column">
+            {{masterVariant.sku}}
         </div>
-        {{/each}}
-    </div>
-</script>
-
-<script id="ct_FacetTemplate" type="text/x-handlebars-template">
-    {{#if facets}}
-    <b>Refine your selection</b>
-    {{#each facets}}
-    <div class="option">
-        <b>{{name}}</b>
-        {{#each terms}}
-        <p class="facet">{{term}}<i>({{count}})</i></p>
-        {{/each}}
+        <div class="ctp-col-2 ctp-column">
+            {{name.en}}
+        </div>
+        <div class="ctp-col-2 image ctp-column">
+            <img src="{{masterVariant.images.0.url}}" class="ctp-thumbnail"/>
+        </div>
+        <div class="ctp-col-1 ctp-column">
+            {{#formatPrice masterVariant.prices 0 "EUR"}}{{/formatPrice}}
+        </div>
+        <div class="ctp-col-2 ctp-column">
+            <a class="ctp-button ctp-button-light" href="{{#mcLink id }}{{/mcLink}}" rel="noopener noreferrer"
+               target="_blank" onclick="event.stopPropagation();">{{#getLabel "openInMc"}}{{/getLabel}}</a>
+        </div>
     </div>
     {{/each}}
-    {{/if}}
+
 </script>
 
-<script id="ct_PickerDialogTemplate" type="text/x-handlebars-template">
+<script id="ctp-category-item" type="text/x-handlebars-template">
+    {{#each results}}
+    <div class="ctp-row" data-id="{{id}}" data-role="action">
+        <div class="ctp-col-1 ctp-column">
+            {{key}}
+        </div>
+        <div class="ctp-col-2 ctp-column">
+            <span>{{name}}</span><br/>
+            <span class="ctp-category-product-label">{{stagedProductCount}} {{#getLabel "categoryProductCountLabel"}}{{/getLabel}}</span>
+        </div>
+        <div class="ctp-col-2 ctp-column">
+            {{slug}}
+        </div>
+        <div class="ctp-col-2 ctp-column">
+            {{#if ancestors}}
+                {{#each ancestors}}
+                  | {{name}}
+                {{/each}}
+            {{/if}}
+        </div>
+        <div class="ctp-col-1 ctp-column">
+            <a class="ctp-button ctp-button-light" href="{{#mcLink id }}{{/mcLink}}" rel="noopener noreferrer"
+               target="_blank" onclick="event.stopPropagation();">{{#getLabel "openInMc"}}{{/getLabel}}</a>
+        </div>
+    </div>
+    {{/each}}
+</script>
+
+<script id="ctp-picker-template" type="text/x-handlebars-template">
     {{#isDialog}}
-    <dialog id="popup">
-    {{/isDialog}}
-        <!--<div class="popup" id="popup">-->
-        <div class="wrapper">
-            <div class="header">
-                {{#if displayOptions.showHeader}}
-                <h1>Pick a product</h1>
-                {{/if}}
-            </div>
-            <div class="sidebar">
-                <div class="option">
-                    <div>
-                        <b>Search for</b>
+    <dialog id="ctp-popup">
+        {{/isDialog}}
+        <div class="ctp-container">
+            <div class="ctp-row">
+                <div class="ctp-col-8">
+                    <div class="ctp-filter-box">
+                        {{#if displayOptions.showHeader}}
+                        <div class="ctp-row">
+                            <div class="ctp-col-8">
+                                <h1 class="ctp-h1">{{#getLabel "title"}}{{/getLabel}}</h1>
+                            </div>
+                        </div>
+                        {{/if}}
+                        <div class="ctp-row">
+                            <div class="ctp-col-2" style="padding:10px">
+                                <b>{{#getLabel "searchText"}}{{/getLabel}}</b>
+                            </div>
+                            <div class="ctp-col-5">
+                                <input type="text" id="ctp-search-input" class="ctp-search-input"
+                                       placeholder="{{#getLabel 'searchPlaceHolder'}}{{/getLabel}}"/>
+                            </div>
+                            <div class="ctp-col-1" style="text-align: left;margin-left:5px">
+                                <a class="ctp-button ctp-button-primary" id="ctp-search-button" data-event="search"
+                                   href="#">{{#getLabel "searchButton"}}{{/getLabel}}</a>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <input type="text" id="searchTerm" class="textInput"/>
+                </div>
+            </div>
+            <div class="ctp-row">
+                <div class="ctp-col-8 ctp-list-container">
+                    <!--Should depend on the type-->
+                    {{#ifValue pickerMode equals="product"}}
+                    <div class="ctp-row">
+                        <div class="ctp-col-1 ctp-header-column">
+                            {{#getLabel 'skuHeader'}}{{/getLabel}}
+                        </div>
+                        <div class="ctp-col-2 ctp-header-column">
+                            {{#getLabel 'productNameHeader'}}{{/getLabel}}
+                        </div>
+                        <div class="ctp-col-2 ctp-header-column">
+                            {{#getLabel 'imageHeader'}}{{/getLabel}}
+                        </div>
+                        <div class="ctp-col-1 ctp-header-column">
+                            {{#getLabel 'priceHeader'}}{{/getLabel}}
+                        </div>
+                        <div class="ctp-col-2 ctp-header-column">
+                            {{#getLabel 'actionHeader'}}{{/getLabel}}
+                        </div>
+                    </div>
+                    {{/ifValue}}
+
+                    {{#ifValue pickerMode equals="category"}}
+                    <div class="ctp-row">
+                        <div class="ctp-col-1 ctp-header-column">
+                            {{#getLabel 'categoryKeyHeader'}}{{/getLabel}}
+                        </div>
+                        <div class="ctp-col-2 ctp-header-column">
+                            {{#getLabel 'categoryNameHeader'}}{{/getLabel}}
+                        </div>
+                        <div class="ctp-col-2 ctp-header-column">
+                            {{#getLabel 'categorySlugHeader'}}{{/getLabel}}
+                        </div>
+                        <div class="ctp-col-2 ctp-header-column">
+                            {{#getLabel 'categoryParentHeader'}}{{/getLabel}}
+                        </div>
+                        <div class="ctp-col-1 ctp-header-column">
+                            {{#getLabel 'actionHeader'}}{{/getLabel}}
+                        </div>
+                    </div>
+                    {{/ifValue}}
+                    <div class="ctp-row">
+                        <div class="ctp-col-8" id="ctp-list">
+                        </div>
                     </div>
                 </div>
-                <div class="option">
-                    <button class="button fullWidth" id="ct_searchButton" data-event="search">Search</button>
-                </div>
-                <div class="panel" id="filterPanel">
-
-                </div>
             </div>
-            <div class="containerArea">
-                <div id="productListContainer">
-                </div>
-            </div>
-            <div class="bottomBar">
-                <div style="text-align: center;width:100%;padding-right:10px">
-                    {{#if displayOptions.showPaging}}
-                    PAGING
-                    {{/if}}
-                </div>
-                <div style="text-align: right;width:100%;padding-right:10px">
-                    {{#if displayOptions.showSelectButton}}
-                    <button class="button" id="ct_saveButton" data-event="select">Save</button>
-                    {{/if}}
-                    {{#if displayOptions.showCancelButton}}
-                    <button class="button" id="ct_cancelButton" data-event="cancel">Cancel</button>
-                    {{/if}}
-                </div>
-                </div>
+            <div class="ctp-row" style="margin-top:10px">
 
+                <div class="ctp-filter-box ctp-col-8">
+                    <div class="ctp-row">
+                        <div class="ctp-col-5 ctp-push-col-2" style="vertical-align: middle;">
+                    <span id="ctp-status-text">
+                    </span>
+                        </div>
+                        {{#if displayOptions.showSelectButton}}
+                        <div class="ctp-col-1">
+                            <a class="ctp-button ctp-button-primary" id="ok" data-event="select" href="#">{{#getLabel
+                                "saveButton"}}{{/getLabel}}</a>
+                        </div>
+                        {{#if displayOptions.showCancelButton}}
+                        <div class="ctp-col-1">
+                            <a class="ctp-button ctp-button-light" id="cancel" data-event="cancel" href="#">{{#getLabel
+                                "cancelButton"}}{{/getLabel}}</a>
+                        </div>
+                        {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
             </div>
         </div>
-    {{#isDialog}}
+        {{#isDialog}}
     </dialog>
     {{/isDialog}}
 </script>
-
-<script id="ct_PickerTemplate" type="text/x-handlebars-template">
-    <div class="wrapper">
-
-        <div class="header">
-            {{#if displayOptions.showHeader}}
-            <h1>Pick a product</h1>
-            {{/if}}
-        </div>
-
-        <div class="sidebar">
-            <div class="option">
-                <div>
-                    <b>Search for</b>
-                </div>
-                <div>
-                    <input type="text" id="searchTerm" class="textInput"/>
-                </div>
-            </div>
-            <div class="option">
-                <button class="button fullWidth" id="ct_searchButton">Search</button>
-            </div>
-            <div class="panel" id="filterPanel">
-
-            </div>
-        </div>
-        <div class="containerArea">
-
-            <div id="productListContainer">
-
-            </div>
-        </div>
-        <div class="bottomBar">
-            <div style="text-align: center;width:100%;padding-right:10px">
-                {{#if displayOptions.showPaging}}
-                PAGING
-                {{/if}}
-            </div>
-            <div style="text-align: right;width:100%;padding-right:10px">
-                {{#if displayOptions.showSelectButton}}
-                <button class="button" id="ct_saveButton">Save</button>
-                {{/if}}
-                {{#if displayOptions.showCancelButton}}
-                <button class="button" id="ct_cancelButton">Cancel</button>
-                {{/if}}
-            </div>
-
-        </div>
-    </div>
-</script>
-
-

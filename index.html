@@ -1,108 +1,125 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+    <base href="/">
+    <title>CT PRODUCT PICKER DEV</title>
+
+    <!-- Fav Icon -->
+    <link href="{{favicon}}" rel="shortcut icon" type="image/x-icon">
+    <link rel="stylesheet" href="">
+    <!-- Vendor CSS Files -->
+    <!--{% for vendorCssFile in vendorCssFiles %}<link rel="stylesheet" href="{{vendorCssFile}}">{% endfor %}-->
+
+    <!-- Application CSS Files -->
+    <!--{% for applicationCssFile in applicationCssFiles %}<link rel="stylesheet" href="{{applicationCssFile}}">{% endfor %}-->
 </head>
-<body>
-<style>
-    .container {
-        background-color: #9191E9;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100vw;
-        height: 100vh;
-    }
 
-</style>
-<h1>Test</h1>
-<button id="openPicker" onclick="openPicker()" class="button">OPEN PICKER</button>
 
-<div id="container">
+<body class="header-fixed">
 
-</div>
-</body>
-<!--<script src="https://ct-merchant-test.herokuapp.com/app.bundle.js"></script>-->
+<div id="pageloader"></div>
+
+<!--<div class="container-fluid" autoscroll="false">-->
+<!--<div class="row header-container">-->
+<!--<section id="header" class="main-header">-->
+<!--<header class="clearfix container-fluid" data-ng-controller="HeaderController">-->
+<!--<div class="row">-->
+<!--<div class="col-sm-1 col-xs-2">-->
+<!--<a class="brand" href="/dashboard">-->
+<!--<img src="https://raw.githubusercontent.com/commercetools/press-kit/master/PNG/72DPI/CT%20cube%20RGB%20300x300.png"-->
+<!--height="40px" alt="Logo Commercetools">-->
+<!--</a>-->
+<!--</div>-->
+<!--<div class="col-sm-4 hidden-xs"></div>-->
+<!--<div class="col-sm-3 col-xs-1">-->
+<!--<div class="btn-group btn-block hidden-xs">-->
+<!--<span class="arrow-select">-->
+<!--<select class="form-control ng-pristine ng-valid ng-not-empty ng-touched" aria-invalid="false">-->
+<!--<option label="Demo Project" value="sunrise-demo">Demo Project</option>-->
+<!--</select>-->
+<!--</span>-->
+<!--</div>-->
+<!--</div>-->
+<!--<div class="col-sm-3 col-xs-7">-->
+<!--<div class="btn-group btn-block">-->
+<!--<span class="arrow-select">-->
+<!--<select class="form-control ng-pristine ng-valid ng-not-empty ng-touched" aria-invalid="false"-->
+<!--ng-model="selectedChannel" ng-change="updateChannel();">-->
+<!--<option ng-repeat="store in stores" value="{{store.id}}">{{store.name}}</option>-->
+<!--</select>-->
+<!--</span>-->
+<!--</div>-->
+<!--</div>-->
+<!--<div class="col-sm-1 col-xs-2 nav-sign-out">-->
+<!--<a href="javascript:void(0);" ng-click="signout();">-->
+<!--<img src=""/>-->
+<!--</a>-->
+<!--</div>-->
+<!--</div>-->
+<!--</header>-->
+<!--</section>-->
+<!--</div>-->
+<!--<div class="row">-->
+<!--<div class="col-xs-12 content-container">-->
+<!--DSJKFDSJ-->
+<!--<div class="view-container" id="ui-view-container">-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+<h1>CMS integration - Product Picker</h1>
+<button onclick="startPicker('product')" >Open the Product Picker</button>
+<button onclick="startPicker('category')" >Open the Category Picker</button>
+<div id="ui-view-container"></div>
+
+
+<!--Vendor JavaScript Files-->
+<!--{% for vendorJsFile in vendorJsFiles %}<script src="{{vendorJsFile}}"></script>{% endfor %}-->
+
+<!--Application JavaScript Files-->
+<!--{% for applicationJsFile in applicationJsFiles %}<script src="{{applicationJsFile}}"></script>{% endfor %}-->
 <script>
 
-  var pickerOptions = {
-    config: {
-      authUri: 'https://auth.commercetools.com',
-      projectKey: 'ivos-personal-project',
-      credentials: {
-        clientId: 'GVijKg5WUzUjZwO8v2FJNv_i',
-        clientSecret: 'MoVEzWL2uAEj9Y0Zoy1F9dTIBPkXDUlk'
-      },
-      apiUri: 'https://api.commercetools.com',
-      graphQLUri: 'https://api.commercetools.com'
-    },
-    mode: "embedded",
-    pageSize: 20,
-    language: "en",
-    selectionMode: "single",
-    pickerMode: "product",
-    displayOptions: {
-      buttons: {
-        cancel: {
-          enabled: false,
-          text: "Save"
-        },
-        save: {
-          enabled: false,
-          text: "Save"
+  function startPicker(type) {
+    var pickerOptions = {
+      project: {
+        projectKey: 'projectKey',
+        credentials: {
+          clientId: 'clientId',
+          clientSecret: 'clientSecret'
         }
       },
-      showHeader: false,
-      showPaging: false,
-      showCancelButton: false,
-      showSelectButton: true
-    },
-    // facets: {
-    //   color: {
-    //     name: "Color",
-    //     filter: "variants.attributes.color.key",
-    //     limit: 5
-    //   },
-    //   designer: {
-    //     name: "Designer",
-    //     filter: "variants.attributes.designer.key",
-    //     limit: 5
-    //   }
-    // },
-    handlers: {
-      onSelect: (items) => {
-        console.log('selected ', items);
+      mode: 'dialog',
+      pickerMode: type,
+      uiLocale: "en-US",
+      displayOptions: {
+        showHeader: false,
+        showCancelButton: true,
+        showSelectButton: true
       },
-      onCancel: () => {
-        console.log('Cancelled')
+      handlers: {
+        onSelect: (items) => {
+          console.log('selected ', items);
+        },
+        onItemSelected: (items) => {
+          console.log('item selected ', items);
+        },
+        onItemDeselected: (items) => {
+          console.log('item deselected ', items);
+        },
+        onCancel: () => {
+          console.log('Cancelled')
+        }
       }
-    }
-  };
+    };
 
-  let ctPicker = new CTPicker(pickerOptions, document.getElementById('container'));
-  // TODO: init should show with embedded
-  // ctPicker.show().then((data) => {
-  //   console.log(data);
-  // }).catch((msg) => {
-  //   if (msg === 'cancel') {
-  //     console.log("user cancelled the dialog without selecting any items");
-  //   } else {
-  //     console.error(msg);
-  //   }
-  // });
+    console.log("Starting picker");
 
-  // ctPicker.init().then(() => {
-  //   ctPicker.show().then((data) => {
-  //     console.log(data);
-  //   }).catch((msg) => {
-  //     if (msg === 'cancel') {
-  //       console.log("user cancelled the dialog without selecting any items");
-  //     } else {
-  //       console.error(msg);
-  //     }
-  //   });
-  // });
+    let ctPicker = new CTPicker(pickerOptions, document.getElementById('ui-view-container'));
 
-
-  function openPicker() {
     ctPicker.show().then((data) => {
       console.log(data);
     }).catch((msg) => {
@@ -113,5 +130,8 @@
       }
     });
   }
+
 </script>
+</body>
+
 </html>

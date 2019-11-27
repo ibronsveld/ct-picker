@@ -14,12 +14,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
-  mode: 'development',
   entry: {
-    app: './src/index.js'
-  },
-  devServer: {
-    contentBase: './dist'
+    picker: './src/index.js'
   },
   plugins: [
     // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin
@@ -39,7 +35,7 @@ module.exports = {
       use: [ {
         loader: 'html-loader',
         options: {
-          minimize: false
+          minimize: true
         }
       }],
     }]

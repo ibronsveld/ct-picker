@@ -1,20 +1,55 @@
 # commercetools Picker
 
-The commercetools Picker is a standalone Javascript component that can be added to third party applications, 
+The commercetools picker (ct-picker) is a standalone Javascript component that can be added to third party applications, 
 such as Content Management Systems, to allow users to select products and/or categories from the commercetools platform.
 
-The picker has been designed to be embedded into any webbased UI, including your own custom applications.
+## Supported Features
 
-## Configuration options
+* Support for products and categories 
+* Search using the commercetools free text search
+* Support for both Multiple & Single selection modes
+* Configurable UI
+* Support for multiple display modes
+* Pluggable event handling
 
-| Option | Description | Allowed Values |
+## Quick Start
+
+### Step 1: Add the reference to the script to your HTML
+```html 
+<script src="ct-picker.min.js" type="text/javascript"></script>
+``` 
+
+### Step 2: Initialize the picker
+
+```javascript
+var options = { ... }; 
+
+var ctPicker = new CTPicker(options, containerElementOrContainerElementID);
+``` 
+For more information on how to provide additional options, check the Configuration Options paragraph.
+
+### Step 3: Display and handle the result
+
+```javascript
+ctPicker.show().then((result) => {
+  console.log("User selected the following items ", result);
+});
+``` 
+
+## Configuration Options
+
+| Variable | Description | Allowed Values |
 |--------|-------------|-------------|
-| config | Object containing the commercetools platform configuration | Object |
-| mode | How to display the picker | String - "_embedded_" to embed in the page, "_dialog_" to generate a dialog |
-| pageSize | Maximum items to load per search | Number - 20 |
-| language | Language to use when searching | String - "en" |
-| selectionMode | Toggle selection mode between single and multiple | String - "single" or "multiple"
-
+| project | The commercetools project configuration| Object - { "projectKey": "...", "credentials": { "clientId": "...", "clientSecret": "..." } }|
+| platform | The commercetools platform configuration | Object - { "apiUri": "...", "authUri": "...", "graphQLUri": "..."}                                                                  
+| mode | How to display the picker | String - "_embedded_" to embed in the page, "_dialog_" to generate a dialog (default value) |
+| pageSize | Maximum items to load per search | Number - 20 (default value)|
+| searchLanguage | Language to use when searching | String - "_en_" (default value)|
+| uiLocale | Locale of the UI | String - "_en-US_" (default value)  |
+| selectionMode | Set selection mode | String - "_single_" (default value) or "_multiple_"
+| pickerMode | Set type of objects to pick. | String - "_product_" (default value) or "_category_"
+| handlers | Custom event handlers. | Object - { onSelect: (), onItemSelected: (), onItemDeselected: (), onCancel: () }
+                                                         
 
 ### Example Configuration
 ```javascript
@@ -31,18 +66,24 @@ The picker has been designed to be embedded into any webbased UI, including your
     },
     mode: "embedded",
     pageSize: 20,
-    language: "en",
+    searchLanguage: "en",
     selectionMode: "single",
     pickerMode: "product",
+    uiLocale: "en-US",
     displayOptions: {
       showHeader: false,
-      showPaging: false,
       showCancelButton: false,
       showSelectButton: true
     },
     handlers: {
       onSelect: (items) => {
         console.log('selected ', items);
+      }, 
+      onItemSelected: (items) => {
+        console.log('item selected ', items);
+      },
+      onItemDeselected: (items) => {
+        console.log('item deselected ', items);
       },
       onCancel: () => {
         console.log('Cancelled')
@@ -51,13 +92,73 @@ The picker has been designed to be embedded into any webbased UI, including your
   };
 ```
 
-## Running it locally:
+
+## Common Examples
+
+### How do I change the display mode?
+The picker supports two different display modes: 
+
+#### Displaying a dialog (default)
+This option generates the picker UI as a modal dialog.
+
+**Usage:**
+
+```javascript
+var options = {
+  // mode can be left blank, 'dialog' is the default value
+  mode: 'dialog'
+}
+```
+
+#### Embedding the UI in the page
+This option generates the picker UI embedded in the container element, typically used in an iframe.
+ 
+**Usage:**
+
+```javascript
+var options = {
+  mode: 'embedded'
+}
+```
+
+### How do I handle user events myself?
+In some cases, you might want to handle the user interactions yourself, for example when you disabled the standard buttons in the picker UI.
+Handling events can be done by providing the desired event handlers in the options object. 
+
+**Example:**
+```javascript
+
+  var options = {    
+    handlers: {
+      onSelect: (items) => {
+        // onSelect is triggered by the main button in the UI
+        console.log('User selected these items ', items);
+      },
+      onItemSelected: (items) => {
+        // onItemSelect is triggered by selecting a single product / category in the UI
+        console.log('User selected the following item ', items);
+      },
+      onCancel: () => {
+        // onCancel is triggered by cancelling the dialog / UI 
+        console.log('Cancelled by user')
+      }
+    }
+  };
+``` 
+
+
+
+## Running it locally
 
 ```
 yarn dev
 ``` 
+## Building the script
+```
+yarn build
+``` 
 
-## Using it in your application
+## Full example: Using it in your application
 
 ```javascript
 
@@ -73,23 +174,11 @@ yarn dev
     },
     mode: 'dialog',
     pageSize: 20,
-    language: "en",
-    facets: {
-      color: {
-        name: "Color",
-        filter: "variants.attributes.color.key",
-        limit: 5
-      },
-      designer: {
-        name: "Designer",
-        filter: "variants.attributes.designer.key",
-        limit: 5
-      }
-    }
+    searchLanguage: "en",
+    uiLocale: "en-US"
   };
 
   let ctPicker = new CTPicker(pickerOptions, 'container');
-  ctPicker.init();
 
   function openPicker() {
     ctPicker.show('dialog').then((data) => {

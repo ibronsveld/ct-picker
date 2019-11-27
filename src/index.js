@@ -5,7 +5,7 @@ import {createAuthMiddlewareForClientCredentialsFlow} from '@commercetools/sdk-m
 import {createRequestBuilder, features} from '@commercetools/api-request-builder';
 import {createHttpMiddleware} from "@commercetools/sdk-middleware-http";
 import Handlebars from "handlebars";
-import {GraphQLQuery, GraphQLQueryBuilder} from "./GraphQLConnector";
+import {GraphQLQueryBuilder} from "./GraphQLConnector";
 
 
 /**
@@ -13,35 +13,45 @@ import {GraphQLQuery, GraphQLQueryBuilder} from "./GraphQLConnector";
  */
 class CTPicker {
 
+  /**
+   * Creates an instance of the commercetools picker
+   * @param options - options object to configure the picker
+   * @param containerElementID - element to use for HTML / templates
+   */
   constructor(options, containerElementID) {
 
     let self = this;
-    this.options = options;
+
+    // Append the HTML from the picker template that is bundled as well
+    this.htmlTemplate = require("../picker.html");
+
+    // Load the default options
+    let defaultOptions = require('./options.json');
+    this.options = { ...defaultOptions, ...options};
+
+    this.options.translations = require('./translations.json');
+
+    // Template URL for the MC
 
     // Step 1: Parse the options
-    if (!this.options) {
-      this.options = {};
-
-    }
-
-    if (this.options.config) {
+    if (this.options.project) {
       // We have a token, otherwise we have to load the login
       this._ctpClient = createClient({
         // The order of the middlewares is important !!!
         middlewares: [
           createAuthMiddlewareForClientCredentialsFlow({
-            host: this.options.config.authUri,
-            projectKey: this.options.config.projectKey,
+            host: this.options.platform.authUri,
+            projectKey: this.options.project.projectKey,
             credentials: {
-              clientId: this.options.config.credentials.clientId,
-              clientSecret: this.options.config.credentials.clientSecret
+              clientId: this.options.project.credentials.clientId,
+              clientSecret: this.options.project.credentials.clientSecret
             }
           }, fetch),
-          createHttpMiddleware({host: this.options.config.graphQLUri}, fetch)
+          createHttpMiddleware({host: this.options.platform.graphQLUri}, fetch)
         ]
       });
       this._requestBuilder = createRequestBuilder({
-        projectKey: this.options.config.projectKey,
+        projectKey: this.options.project.projectKey,
         customServices: {
           graphql: {
             type: 'graphql',
@@ -54,12 +64,7 @@ class CTPicker {
       throw ("Unable to create client: No configuration provided");
     }
 
-    // Set the operating mode
-    if (!this.options.mode) {
-      this.options.mode = 'dialog';
-    }
-
-
+    // SETUP HELPERS FOR THE TEMPLATE
     Handlebars.registerHelper('isDialog', (options) => {
       if (self.options.mode === 'dialog') {
         if (options.fn)
@@ -69,16 +74,59 @@ class CTPicker {
         return options.inverse(this);
     });
 
+    Handlebars.registerHelper('getLabel', (key, options) => {
+      return self._getLabel(key);
+    });
+
+    Handlebars.registerHelper('mcLink', (id, options) => {
+      if (id) {
+        let uriTemplate = `${self.options.platform.mcUri}/${self.options.project.projectKey}/products/${id}/general`;
+        if (self.options.pickerMode === 'category') {
+          uriTemplate = `${self.options.platform.mcUri}/${self.options.project.projectKey}/categories/${id}/general`;
+        }
+
+        return uriTemplate
+      }
+    });
+
+    Handlebars.registerHelper('formatPrice', (prices, index, currency, options) => {
+
+      index = index || 0;
+      currency = currency || "EUR";
+
+      if (prices) {
+        let priceObject = prices[index];
+        if (priceObject) {
+          if (priceObject.value) {
+            if (priceObject.value.currencyCode === currency) {
+              // Calc value
+              let factor = Math.pow(10, parseInt(priceObject.value.fractionDigits));
+              let amount = priceObject.value.centAmount;
+              let total = amount/factor;
+              return total.toLocaleString(self.options.uiLocale, {currency:priceObject.value.currencyCode, style:"currency"});
+            }
+          }
+        }
+      } else {
+
+      }
+    });
+
+    Handlebars.registerHelper("ifValue", function(conditional, options) {
+      if (conditional == options.hash.equals) {
+        return options.fn(this);
+      } else {
+        return options.inverse(this);
+      }
+    });
+
+    // SETUP CONTAINER ELEMENT
     try {
       if (typeof containerElementID === 'string' || containerElementID instanceof String) {
         this.containerElement = document.getElementById(containerElementID);
       } else {
         this.containerElement = containerElementID;
       }
-
-      // Append the HTML from the picker template
-      this.htmlTemplate = require("../picker.html");
-
     } catch (err) {
       console.error("Error selecting container element", err);
     }
@@ -86,10 +134,9 @@ class CTPicker {
 
   /**
    * Shows the picker
-   * @param mode - one of the following: 'dialog', 'embedded'
-   * @returns {Promise<any>}
+   * @returns {Promise<any>} Promise that resolves with the selected items.
    */
-  show(mode) {
+  show() {
     let self = this;
 
     let promise = new Promise((resolve, reject) => {
@@ -101,127 +148,82 @@ class CTPicker {
     if (self.containerElement) {
       self.containerElement.innerHTML = self.htmlTemplate;
 
-      // Second, process the appropriate elements
+      // Second, process the appropriate elements after giving it a small delay
       setTimeout(() => {
         try {
+          let script = self._getTemplate('ctp-picker-template');
 
-          let script = self._getTemplate('ct_PickerDialogTemplate');
-
-          // TODO: ADD TRANSLATIONS TO OBJECT
           let finalHTML = script(self.options);
+
           let wrapper = document.createElement('div');
-          wrapper.id = "ct_PickerWrapper";
+          wrapper.id = "ctp-wrapper";
           wrapper.innerHTML = finalHTML;
+
           self.containerElement.appendChild(wrapper);
 
-          // Add
-          if (self.options.displayOptions) {
-            if (self.options.displayOptions.showSelectButton) {
-              let saveButton = document.getElementById("ct_saveButton");
-              // Hide the OK button when nothing selected
-              // saveButton.style.display = "none";
+          // There are several elements in the wrapper that need an event handler
+          // We loop through all the elements that are in there and attach the appropriate handler
+          let elements = self.containerElement.querySelectorAll('a[data-event]');
 
-              if (self.options.handlers && self.options.handlers.onSelect) {
-                saveButton.onclick = () => {
+          // We found some buttons, attach the handler
+          if (elements) {
+            elements.forEach((button) => {
+              button.onclick = (e) => {
+                // Based on the event target
+                if (e) {
+                  if (e.target) {
+                    let attr = e.target.getAttribute("data-event");
+                    if (attr) {
 
-                  switch (mode || self.options.mode) {
-                    case 'dialog':
-                      self._toggle();
-                      break;
+                      switch (attr) {
+                        case "search":
+                          self._doSearch();
+                          break;
+
+                        case "select":
+                          self._doSelect();
+                          break;
+
+                        case "cancel":
+                          self._doCancel();
+                          break;
+                      }
+                    }
                   }
-                  self.getSelectedItems().then((data) => {
-                    self.options.handlers.onSelect(data);
-                  })
                 }
-              } else {
-                saveButton.onclick = () => {
-
-                  switch (mode || self.options.mode) {
-                    case 'dialog':
-                      self._toggle();
-                      break;
-                  }
-
-                  if (self.resolveFn) {
-                    self.getSelectedItems().then((data) => {
-                      self.resolveFn(data);
-                    })
-                  } else {
-                    throw "Error resolving / rejecting the promise.";
-                  }
-                };
               }
-            }
-
-            // TODO: Add event handlers
-            if (self.options.displayOptions.showCancelButton) {
-              let cancelButton = document.getElementById("ct_cancelButton");
-
-              if (self.options.handlers && self.options.handlers.onCancel) {
-                cancelButton.onclick = () => {
-
-                  switch (mode || self.options.mode) {
-                    case 'dialog':
-                      self._toggle();
-                      break;
-                  }
-
-                  self.options.handlers.onCancel();
-                }
-              } else {
-                cancelButton.onclick = () => {
-
-                  switch (mode || self.options.mode) {
-                    case 'dialog':
-                      self._toggle();
-                      break;
-                  }
-
-                  if (self.rejectFn) {
-                    self.rejectFn("cancel");
-                  } else {
-                    throw "Error resolving / rejecting the promise.";
-                  }
-                };
-              }
-            }
+            });
           }
 
-          // TODO: Add the basic text search option
-          let input = document.getElementById("searchTerm");
-          input.addEventListener("keyup", function (event) {
-            // Number 13 is the "Enter" key on the keyboard
-            if (event.keyCode === 13) {
-              // Cancel the default action, if needed
-              event.preventDefault();
-              // Trigger the button element with a click
-              document.getElementById("ct_searchButton").click();
-            }
+          let input = document.getElementById("ctp-search-input");
 
-            if (event.keyCode === 27) {
-              event.preventDefault();
-              document.getElementById("ct_cancelButton").click();
-            }
-          });
+          if (input) {
+            input.addEventListener("keyup", function (event) {
+              // Number 13 is the "Enter" key on the keyboard
+              if (event.keyCode === 13) {
+                // Cancel the default action, if needed
+                event.preventDefault();
+                // Trigger the button element with a click
+                self._doSearch();
+              }
 
-          let searchButton = document.getElementById("ct_searchButton");
-          searchButton.onclick = () => {
-            self._doSearch();
-          };
+              if (event.keyCode === 27) {
+                event.preventDefault();
+                self._doCancel();
+              }
+            });
+            input.focus();
+          }
+
         } catch (err) {
           console.error("Error creating dialog!", err);
         }
 
+        // The toggle method knows if we are dialog or not, always use toggle
+        self._toggle();
 
-        switch (mode || self.options.mode) {
-          case 'dialog':
-            self._toggle();
-            break;
-        }
-      }, 500);
-
+      }, 200);
     }
-
     return promise;
   }
 
@@ -256,101 +258,6 @@ class CTPicker {
     });
   }
 
-  clear() {
-
-    let self = this;
-    if (self.containerElement) {
-      while (self.containerElement.firstChild) {
-        self.containerElement.removeChild(self.containerElement.firstChild);
-      }
-    }
-
-    // TODO: fix
-    self.selected = undefined;
-    self.results = undefined;
-  }
-
-  _handleEvent(eventKey, data) {
-
-    // This one
-
-
-  }
-
-  // /**
-  //  * Shows the picker in a different mode
-  //  * @returns {Promise<any>}
-  //  */
-  // show() {
-  //   let self = this;
-  //
-  //   if (self.options && self.options.mode !== 'embedded') {
-  //     throw "mode not set to embedded";
-  //   }
-  //
-  //   // Based on the mode, do different things
-  //
-  //
-  //   let promise = new Promise((resolve, reject) => {
-  //     self.resolveFn = resolve;
-  //     self.rejectFn = reject;
-  //   });
-  //
-  //
-  //   self._generateEmbedded();
-  //
-  //   // self._toggle();
-  //   return promise;
-  // }
-
-
-  // /**
-  //  * Shows the picker as a modal dialog. Requires mode = 'dialog'
-  //  * @param resetState set to true to reset the state to default, false to keep the current state
-  //  * @returns {Promise<any>} promise to resolve result of the dialog
-  //  */
-  // showModal(resetState) {
-  //   let self = this;
-  //
-  //   if (resetState) {
-  //     // We remove the elements
-  //     self.selected = [];
-  //     //self._updateTemplateContext(undefined, undefined);
-  //     self._clearResults();
-  //   }
-  //
-  //   let promise = new Promise((resolve, reject) => {
-  //     self.resolveFn = resolve;
-  //     self.rejectFn = reject;
-  //   });
-  //
-  //   self._toggle();
-  //   return promise;
-  // }
-
-  // select(id) {
-  //   // Check if we have it in the list
-  //   let self = this;
-  //
-  //   if (!self.selected) {
-  //     self.selected = [];
-  //   }
-  //
-  //   if (self.selected) {
-  //     let idx = self.selected.indexOf(id);
-  //     if (idx > -1) {
-  //       self.selected.splice(idx, 1);
-  //     } else {
-  //       self.selected.push(id);
-  //     }
-  //   }
-  //
-  //   if (self.selected.length > 0) {
-  //     let saveButton = document.getElementById("ct_saveButton");
-  //     saveButton.style.display = "unset";
-  //   }
-  // }
-
   /**
    * Loads a template by ID
    * @param id The ID of the element to get the template from
@@ -358,9 +265,36 @@ class CTPicker {
    * @private
    */
   _getTemplate(id) {
+    let elem = document.getElementById(id);
+    if (elem) {
+      let tmpl = elem.innerHTML;
+      return Handlebars.compile(tmpl);
+    } else {
+      throw "Template " + id + " not found";
+    }
+  }
 
-    let tmpl = document.getElementById(id).innerHTML;
-    return Handlebars.compile(tmpl);
+  _getLabel(key) {
+    let self = this;
+    if (self.options.uiLocale) {
+      let labels = self.options.translations[self.options.uiLocale];
+      if (labels) {
+        if (labels[key]) {
+          return labels[key];
+        }
+      }
+    }
+  }
+
+  _format() {
+    let args = arguments;
+
+    return args[0].replace(/{(\d+)}/g, function(match, number) {
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+        ;
+    });
   }
 
   /**
@@ -368,7 +302,7 @@ class CTPicker {
    * @private
    */
   _clearResults() {
-    let docList = document.getElementById("productListContainer");
+    let docList = document.getElementById("ctp-list");
     while (docList.firstChild) {
       docList.removeChild(docList.firstChild);
     }
@@ -380,20 +314,29 @@ class CTPicker {
    */
   _toggle() {
 
-    // When the user clicks anywhere outside of the modal, close it
-    let modal = document.getElementById("popup");
-    if (modal) {
-      let open = modal.getAttribute("open");
-      if (!open) {
-        modal.setAttribute("open", "true");
-        let input = document.getElementById("searchTerm");
-        input.focus();
+    // If the mode is not "dialog" return
+    let self = this;
+
+    if (self.options.mode === 'dialog') {
+      // When the user clicks anywhere outside of the modal, close it
+      let modal = document.getElementById("ctp-popup");
+      if (modal) {
+        let open = modal.getAttribute("open");
+        if (!open) {
+          modal.setAttribute("open", "true");
+          let input = document.getElementById("ctp-search-input");
+          input.focus();
+        } else {
+          modal.removeAttribute("open");
+        }
+
+        // modal.showDialog();
+
       } else {
-        modal.removeAttribute("open");
+        throw ("No dialog found");
       }
     } else {
-      throw ("No dialog found");
-
+      return;
     }
   }
 
@@ -421,6 +364,74 @@ class CTPicker {
   }
 
   /**
+   * Handle the select event
+   * @private
+   */
+  _doSelect() {
+    let self = this;
+    self._toggle();
+
+    self.getSelectedItems().then((data) => {
+
+      if (self.options.handlers && self.options.handlers.onSelect) {
+        self.options.handlers.onSelect(data);
+      }
+
+      if (self.resolveFn) {
+        self.resolveFn(data);
+      } else {
+        throw "Error resolving / rejecting the promise.";
+      }
+    })
+  }
+
+  /**
+   * Handle the cancel event
+   * @private
+   */
+  _doCancel() {
+    let self = this;
+    self._toggle();
+
+    if (self.options.handlers && self.options.handlers.onCancel) {
+      self.options.handlers.onCancel();
+    }
+
+    if (self.rejectFn) {
+      self.rejectFn("cancel");
+    } else {
+      throw "Error resolving / rejecting the promise.";
+    }
+  }
+
+  /**
+   * Execute request in the platform
+   * @param request
+   * @returns {Promise<T | never>}
+   * @private
+   */
+  _doRequest(request) {
+    let self = this;
+    try {
+      if (self._ctpClient && request) {
+        return self._ctpClient.execute(request).then((response) => {
+          return response;
+        }).catch((error) => {
+          throw error;
+        })
+      } else {
+        throw ("Client not initialized");
+      }
+    } catch (e) {
+      if (self.rejectFn) {
+        self.rejectFn(e);
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  /**
    * Executes a search in the platform
    * @private
    */
@@ -437,22 +448,19 @@ class CTPicker {
     }
   }
 
+  /**
+   * Search for products
+   * @private
+   */
   _doProductSearch() {
     let self = this;
     if (self._requestBuilder) {
-
-      //let productQuery = self._requestBuilder.productProjectionsSearch.text("bag", "en").build(); //= features.search;  //= {value: 'bag', language: 'en'} //self._requestBuilder.products.build();
-
-      // TODO: Select Categories as well??
-
-      // TODO: Create the facet & filter state
-
-
       // Loop through all the controls
-      let freetextSearch = document.getElementById("searchTerm").value;
+      let freetextSearch = document.getElementById("ctp-search-input").value;
 
       let productQuery = self._requestBuilder.productProjectionsSearch;
       // First we set the basic settings
+      // v1.0: There is no UI for facets
       if (self.options.facets) {
         let facetKeys = Object.keys(self.options.facets);
         facetKeys.forEach((key) => {
@@ -462,7 +470,7 @@ class CTPicker {
       }
 
       // Add the other options
-      productQuery.text(freetextSearch, ((self.options.language) ? self.options.language : "en"));
+      productQuery.text(freetextSearch, ((self.options.searchLanguage) ? self.options.searchLanguage : "en"));
       productQuery.perPage((self.options.pageSize) ? self.options.pageSize : 20);
 
       let productRequest = {
@@ -474,113 +482,137 @@ class CTPicker {
       self._doRequest(productRequest).then((response) => {
         if (response.body && response.body.results) {
           self._updateTemplateContext(response.body.results, response.body.facets);
-          // console.log(response.body.results);
           self._printResults();
         }
       });
     }
   }
 
+  /**
+   * Search for categories
+   * @private
+   */
   _doCategorySearch() {
     let self = this;
     if (self._requestBuilder) {
 
-      //let productQuery = self._requestBuilder.productProjectionsSearch.text("bag", "en").build(); //= features.search;  //= {value: 'bag', language: 'en'} //self._requestBuilder.products.build();
-
-      // TODO: Select Categories as well??
-
-      // TODO: Create the facet & filter state
-
-
       // Loop through all the controls
-      let freetextSearch = document.getElementById("searchTerm").value;
+      let freetextSearch = document.getElementById("ctp-search-input").value;
 
-      let productQuery = self._requestBuilder.categories;
-      // First we set the basic settings
-      // if (self.options.facets) {
-      //   let facetKeys = Object.keys(self.options.facets);
-      //   facetKeys.forEach((key) => {
-      //     let item = self.options.facets[key];
-      //     productQuery.facet(item.filter + " as " + key);
-      //   });
-      // }
-
-      // Add the other options
-      // productQuery.where(freetextSearch, ((self.options.language) ? self.options.language : "en"));
-      // productQuery.perPage((self.options.pageSize) ? self.options.pageSize : 20);
-
-      let productRequest = {
-        uri: productQuery.build(),
-        method: 'GET'
-      };
-
-      console.log(productRequest.uri);
+      // Build a GraphQL query
+      let builder = new GraphQLQueryBuilder(self._ctpClient, {projectKey: self.options.project.projectKey});
+      let query = builder.setQuery('query category($searchTerm: String!, $locale: Locale!) {\n' +
+        '  categorySearch(fulltext: {text: $searchTerm, locale: $locale}) {\n' +
+        '    results {\n' +
+        '      id,\n' +
+        '      key,\n' +
+        '      name(locale: $locale),\n' +
+        '      slug(locale: $locale),\n' +
+        '      stagedProductCount,\n' +
+        '      ancestors {\n' +
+        '        name(locale:$locale)\n' +
+        '      }\n' +
+        '    }\n' +
+        '  }\n' +
+        '}').addVariable("searchTerm", freetextSearch)
+        .addVariable("locale", self.options.searchLanguage).build();
 
       // Do a search
-      self._doRequest(productRequest).then((response) => {
-        if (response.body && response.body.results) {
-          self._updateTemplateContext(response.body.results, response.body.facets);
-          // console.log(response.body.results);
+      query.execute().then((response) => {
+        console.log(response);
+        if (response.body && response.body.data && response.body.data.categorySearch && response.body.data.categorySearch.results) {
+          self._updateTemplateContext(response.body.data.categorySearch.results, response.body.facets);
           self._printResults();
         }
       });
     }
   }
 
+  /**
+   * Display the results
+   * @private
+   */
   _printResults() {
     //
     let self = this;
     self._clearResults();
 
     // HANDLE PRODUCTS
-    let productTemplate = self._getTemplate("productItem");
+    let itemTemplate = self._getTemplate("ctp-product-item");
 
     if (self.options.pickerMode === 'category') {
-      let productTemplate = self._getTemplate("categoryItem");
+      itemTemplate = self._getTemplate("ctp-category-item");
     }
 
-    let productHTML = productTemplate(self.context);
+    let itemsHTML = itemTemplate(self.context);
+
+    // Set the status text
+    let statusText = document.getElementById('ctp-status-text');
+    statusText.innerText = self._format(self._getLabel('resultsFoundText'), self.context.results.length);
 
     // Use handlebars to generate the HTML
-    let list = document.getElementById('productListContainer');
-    list.innerHTML = productHTML;
+    let list = document.getElementById('ctp-list');
+    list.innerHTML = itemsHTML;
 
     // Now, let's add the appropriate clicks to the UI
     let buttons = list.querySelectorAll('div[data-role="action"]');
     buttons.forEach((b) => {
-      b.addEventListener('click', () => {
-        if (b.hasAttribute("data-id")) {
+      b.addEventListener('click', (e) => {
 
-          if (self.options.selectionMode === 'single') {
-            self._unselectAll();
-          }
+        // Find main
+        let button = b;
 
+        if (button.hasAttribute("data-id")) {
+          let selected = false;
           // Toggle the selected
-          if (b.hasAttribute("data-selected")) {
-            b.removeAttribute("data-selected");
+          if (button.hasAttribute("data-selected")) {
+            if (self.options.selectionMode === 'single') {
+              self._unselectAll();
+            } else {
+              button.removeAttribute("data-selected");
+            }
           } else {
-            b.setAttribute("data-selected", "true");
+            if (self.options.selectionMode === 'single') {
+              self._unselectAll();
+            }
+            selected = true;
+            button.setAttribute("data-selected", "true");
           }
+
+          self._findById(button.getAttribute("data-id")).then((selectedObject) => {
+            if (selected) {
+              if (self.options.handlers && self.options.handlers.onItemSelected) {
+                self.options.handlers.onItemSelected(selectedObject);
+              }
+            } else {
+              if (self.options.handlers && self.options.handlers.onItemDeselected) {
+                self.options.handlers.onItemDeselected(selectedObject);
+              }
+            }
+          });
         }
       })
     });
-
-    // HANDLE FACETS, IF APPLICABLE
-    let filterList = document.getElementById("filterPanel");
-    let facetTemplate = self._getTemplate("ct_FacetTemplate");
-
-    let facetHTML = facetTemplate(self.context);
-    filterList.innerHTML = facetHTML;
   }
 
+  /**
+   * Remove selection
+   * @private
+   */
   _unselectAll() {
-    let list = document.getElementById('productListContainer');
+    let list = document.getElementById('ctp-list');
     let buttons = list.querySelectorAll('div[data-selected="true"]');
     buttons.forEach((b) => {
       b.removeAttribute("data-selected");
     });
   }
 
+  /**
+   * Store the right information in the context for generating the templates
+   * @param products products
+   * @param facets facets
+   * @private
+   */
   _updateTemplateContext(products, facets) {
     let self = this;
 
@@ -588,6 +620,7 @@ class CTPicker {
       facets: [],
       results: []
     };
+
 
     if (facets) {
       let facetKeys = Object.keys(facets);
@@ -622,27 +655,11 @@ class CTPicker {
       self.context.results = products;
     }
   }
+}
 
-  _doRequest(request) {
-    let self = this;
-    try {
-      if (self._ctpClient && request) {
-        return self._ctpClient.execute(request).then((response) => {
-          return response;
-        }).catch((error) => {
-          throw error;
-        })
-      } else {
-        throw ("Client not initialized");
-      }
-    } catch (e) {
-      if (self.rejectFn) {
-        self.rejectFn(e);
-      } else {
-        throw e;
-      }
-    }
-  }
+// TODO: Build a builder??
+class CTPickerBuilder {
+
 }
 
 // TODO: proper expose?

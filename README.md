@@ -46,10 +46,23 @@ ctPicker.show().then((result) => {
 | pageSize | Maximum items to load per search | Number - 20 (default value)|
 | searchLanguage | Language to use when searching | String - "_en_" (default value)|
 | uiLocale | Locale of the UI | String - "_en-US_" (default value)  |
+| displayOptions | Additional options around the UI | Object - { showHeader, showCancelButton, showSelectButton } |
 | selectionMode | Set selection mode | String - "_single_" (default value) or "_multiple_"
 | pickerMode | Set type of objects to pick. | String - "_product_" (default value) or "_category_"
 | handlers | Custom event handlers. | Object - { onSelect: (items), onItemSelected: (item), onItemDeselected: (item), onCancel: () }
                                                          
+### Configure the display
+As part of the options, the UI can be configured to show the header as well as the cancel or select buttons at the bottom.
+
+```json
+  {
+    "displayOptions": {
+      "showHeader": false,
+      "showCancelButton": false,
+      "showSelectButton": true
+    }
+  }
+```
 
 ### Example Configuration
 ```javascript

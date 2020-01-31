@@ -31,7 +31,8 @@ class CTPicker {
 
     this.options.translations = require('./translations.json');
 
-    // Template URL for the MC
+    //
+    //if (this.options.selectedItems)
 
     // Step 1: Parse the options
     if (this.options.project) {
@@ -42,6 +43,7 @@ class CTPicker {
           createAuthMiddlewareForClientCredentialsFlow({
             host: this.options.platform.authUri,
             projectKey: this.options.project.projectKey,
+            scopes: ['view_published_products:' + this.options.project.projectKey, 'view_products:' + this.options.project.projectKey ],
             credentials: {
               clientId: this.options.project.credentials.clientId,
               clientSecret: this.options.project.credentials.clientSecret
@@ -111,6 +113,21 @@ class CTPicker {
 
       }
     });
+
+    // HELPER FUNCTION TO SELECT ITEM IF THE ID WAS ALREADY SELECTED
+    // NOTE: CURRENTLY ONLY WORKS WHEN YOU USE A QUERY
+    Handlebars.registerHelper("shouldSelect", function(id, options) {
+      if (id) {
+        if (self.options.selectedItems) {
+          if (self.options.selectedItems.indexOf(id) > -1) {
+            return "data-selected=\"true\"";
+          }
+        }
+      }
+
+      return "";
+    });
+
 
     Handlebars.registerHelper("ifValue", function(conditional, options) {
       if (conditional == options.hash.equals) {

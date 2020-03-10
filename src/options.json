@@ -10,5 +10,6 @@
   "pageSize": 20,
   "searchLanguage": "en",
   "selectionMode": "single",
-  "pickerMode": "product"
+  "pickerMode": "product",
+  "allowVariantSelection": "true"
 }

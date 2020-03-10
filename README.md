@@ -50,7 +50,7 @@ ctPicker.show().then((result) => {
 | selectionMode | Set selection mode | String - "_single_" (default value) or "_multiple_"
 | pickerMode | Set type of objects to pick. | String - "_product_" (default value) or "_category_"
 | handlers | Custom event handlers. | Object - { onSelect: (items), onItemSelected: (item), onItemDeselected: (item), onCancel: () }
-                                                         
+| selectedItems | Can be used to pass any selected items to the picker |Array - Should contain array of valid Product or Category IDs                                                        
 ### Configure the display
 As part of the options, the UI can be configured to show the header as well as the cancel or select buttons at the bottom.
 

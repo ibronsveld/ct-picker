@@ -153,6 +153,7 @@
 
     .ctp-row[data-selected="true"] {
         border: 2px solid #00b39e;
+        background-color: #00b39e33;
     }
 
     .ctp-thumbnail {
@@ -209,6 +210,10 @@
         color: rgb(153, 153, 153);
     }
 
+    .ctp-link {
+        color: #fff;
+        font-weight: bold;
+    }
 
     .ctp-search-input {
         box-sizing: border-box;
@@ -235,16 +240,44 @@
         padding: 10px;
     }
 
+    /* Tooltip container */
+    .ctp-tooltip {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+    }
+
+    /* Tooltip text */
+    .ctp-tooltip .ctp-tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        padding: 5px 0;
+        border-radius: 6px;
+
+        /* Position the tooltip text - see examples below! */
+        position: absolute;
+        z-index: 1;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .ctp-tooltip:hover .ctp-tooltiptext {
+        visibility: visible;
+    }
+
 </style>
 
 <script id="ctp-product-item" type="text/x-handlebars-template">
 
     {{#each results}}
-    <div class="ctp-row" data-id="{{id}}" data-role="action">
+    <div class="ctp-row" data-id="{{id}}" data-role="action" {{#shouldSelect id}}{{/shouldSelect}}>
         <div class="ctp-col-1 ctp-column">
             {{masterVariant.sku}}
         </div>
         <div class="ctp-col-2 ctp-column">
+            <!--TODO: Fix localization here-->
             {{name.en}}
         </div>
         <div class="ctp-col-2 image ctp-column">
@@ -262,9 +295,66 @@
 
 </script>
 
+<script id="ctp-variant-item" type="text/x-handlebars-template">
+
+    {{#each results}}
+    <div data-id="{{id}}">
+    <div class="ctp-row"  {{#shouldSelect id}}{{/shouldSelect}}>
+
+        <div class="ctp-col-2 ctp-header-column">
+            <b>{{name.en}}</b>
+        </div>
+        <div class="ctp-col-4 ctp-header-column">
+            <b>Available variants: {{#variantCount this}}{{/variantCount}}</b>
+        </div>
+        <div class="ctp-col-2 ctp-header-column">
+            <a class="ctp-link" href="{{#mcLink id }}{{/mcLink}}" rel="noopener noreferrer" target="_blank" onclick="event.stopPropagation();">{{#getLabel "openInMc"}}{{/getLabel}}</a>
+        </div>
+    </div>
+
+        <div class="ctp-row" data-role="action" data-variant-id="{{masterVariant.id}}" data-id="{{id}}">
+            <div class="ctp-col-1 ctp-column">
+                {{masterVariant.sku}}
+            </div>
+            <div class="ctp-col-2 ctp-column">
+                Variant ID: {{masterVariant.id}}
+            </div>
+            <div class="ctp-col-2 image ctp-column">
+                <img src="{{masterVariant.images.0.url}}" class="ctp-thumbnail"/>
+            </div>
+            <div class="ctp-col-1 ctp-column">
+                {{#formatPrice masterVariant.prices 0 "EUR"}}{{/formatPrice}}
+            </div>
+            <div class="ctp-col-2 ctp-column">
+            </div>
+        </div>
+
+        {{#each variants}}
+            <div class="ctp-row" data-role="action" data-variant-id="{{id}}" data-id="{{../id}}">
+                <div class="ctp-col-1 ctp-column">
+                    {{sku}}
+                </div>
+                <div class="ctp-col-2 ctp-column">
+                    Variant ID: {{id}}
+                </div>
+                <div class="ctp-col-2 image ctp-column">
+                    <img src="{{images.0.url}}" class="ctp-thumbnail"/>
+                </div>
+                <div class="ctp-col-1 ctp-column">
+                    {{#formatPrice prices 0 "EUR"}}{{/formatPrice}}
+                </div>
+                <div class="ctp-col-2 ctp-column">
+                </div>
+            </div>
+        {{/each}}
+    </div>
+    {{/each}}
+
+</script>
+
 <script id="ctp-category-item" type="text/x-handlebars-template">
     {{#each results}}
-    <div class="ctp-row" data-id="{{id}}" data-role="action">
+    <div class="ctp-row" data-id="{{id}}" data-role="action" {{#shouldSelect id}}{{/shouldSelect}}>
         <div class="ctp-col-1 ctp-column">
             {{key}}
         </div>

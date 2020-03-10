@@ -31,9 +31,6 @@ class CTPicker {
 
     this.options.translations = require('./translations.json');
 
-    //
-    //if (this.options.selectedItems)
-
     // Step 1: Parse the options
     if (this.options.project) {
       // We have a token, otherwise we have to load the login
@@ -66,7 +63,9 @@ class CTPicker {
       throw ("Unable to create client: No configuration provided");
     }
 
+    // HANDLEBARS
     // SETUP HELPERS FOR THE TEMPLATE
+    //
     Handlebars.registerHelper('isDialog', (options) => {
       if (self.options.mode === 'dialog') {
         if (options.fn)
@@ -115,7 +114,6 @@ class CTPicker {
     });
 
     // HELPER FUNCTION TO SELECT ITEM IF THE ID WAS ALREADY SELECTED
-    // NOTE: CURRENTLY ONLY WORKS WHEN YOU USE A QUERY
     Handlebars.registerHelper("shouldSelect", function(id, options) {
       if (id) {
         if (self.options.selectedItems) {
@@ -124,10 +122,15 @@ class CTPicker {
           }
         }
       }
-
       return "";
     });
 
+    Handlebars.registerHelper("variantCount", function(product, options) {
+      if (product && product.variants) {
+        return product.variants.length + 1;
+      }
+      return 1;
+    });
 
     Handlebars.registerHelper("ifValue", function(conditional, options) {
       if (conditional == options.hash.equals) {
@@ -136,6 +139,9 @@ class CTPicker {
         return options.inverse(this);
       }
     });
+
+    // CREATE A SELECTION STATE OBJECT
+    this.selection = new Selection(this.options.pickerMode);
 
     // SETUP CONTAINER ELEMENT
     try {
@@ -252,8 +258,6 @@ class CTPicker {
     let self = this;
 
     // Loop over all
-    // TODO: Change parent?
-
     return new Promise((resolve, reject) => {
       let elements = self.containerElement.querySelectorAll('div[data-role="action"]');
 
@@ -261,8 +265,7 @@ class CTPicker {
         let selected = [];
         elements.forEach((elem) => {
           if (elem.hasAttribute("data-selected")) {
-            let id = elem.getAttribute('data-id');
-            selected.push(self._findById(id).then((item) => {
+            selected.push(self._createSelection(elem).then((item) => {
               return item;
             }));
           }
@@ -291,6 +294,12 @@ class CTPicker {
     }
   }
 
+  /**
+   *
+   * @param key
+   * @returns {*}
+   * @private
+   */
   _getLabel(key) {
     let self = this;
     if (self.options.uiLocale) {
@@ -303,6 +312,11 @@ class CTPicker {
     }
   }
 
+  /**
+   * Formats
+   * @returns {void|string|never}
+   * @private
+   */
   _format() {
     let args = arguments;
 
@@ -315,7 +329,7 @@ class CTPicker {
   }
 
   /**
-   * Clears the current product grid
+   * Clears the current grid
    * @private
    */
   _clearResults() {
@@ -372,6 +386,30 @@ class CTPicker {
         self.context.results.forEach((item) => {
           if (item["id"] === id) {
             resolve(item);
+          }
+        });
+      } else {
+        reject("no data");
+      }
+    });
+  }
+
+  _createSelection(element) {
+
+    //
+    let productId = element.getAttribute("data-id");
+    let variantId = element.getAttribute("data-variant-id");
+
+    return new Promise((resolve, reject) => {
+      let self = this;
+
+      if (self.context && self.context.results) {
+        // Let's find the right element
+
+        self.context.results.forEach((item) => {
+          if (item["id"] === productId) {
+            // We have the right one with the ID;
+            resolve(new Selection(self.options.pickerMode, item, variantId));
           }
         });
       } else {
@@ -499,6 +537,7 @@ class CTPicker {
       self._doRequest(productRequest).then((response) => {
         if (response.body && response.body.results) {
           self._updateTemplateContext(response.body.results, response.body.facets);
+          console.log(response.body.results);
           self._printResults();
         }
       });
@@ -561,11 +600,17 @@ class CTPicker {
       itemTemplate = self._getTemplate("ctp-category-item");
     }
 
+    if (self.options.pickerMode === 'variant') {
+      itemTemplate = self._getTemplate("ctp-variant-item");
+    }
+
+
     let itemsHTML = itemTemplate(self.context);
 
     // Set the status text
+    // TODO: Configure how to show
     let statusText = document.getElementById('ctp-status-text');
-    statusText.innerText = self._format(self._getLabel('resultsFoundText'), self.context.results.length);
+    statusText.innerText = self._format(self._getLabel(self.options.pickerMode + 'FoundText'), self.context.results.length);
 
     // Use handlebars to generate the HTML
     let list = document.getElementById('ctp-list');
@@ -573,11 +618,8 @@ class CTPicker {
 
     // Now, let's add the appropriate clicks to the UI
     let buttons = list.querySelectorAll('div[data-role="action"]');
-    buttons.forEach((b) => {
-      b.addEventListener('click', (e) => {
-
-        // Find main
-        let button = b;
+    buttons.forEach((button) => {
+      button.addEventListener('click', (e) => {
 
         if (button.hasAttribute("data-id")) {
           let selected = false;
@@ -596,7 +638,11 @@ class CTPicker {
             button.setAttribute("data-selected", "true");
           }
 
-          self._findById(button.getAttribute("data-id")).then((selectedObject) => {
+
+          //self._findById(button.getAttribute("data-id"), button.getAttribute("data-variant-id")).then((selectedObject) => {
+          self._createSelection(button).then((selectedObject) => {
+
+            // Convert selected element into the correct object
             if (selected) {
               if (self.options.handlers && self.options.handlers.onItemSelected) {
                 self.options.handlers.onItemSelected(selectedObject);
@@ -626,7 +672,7 @@ class CTPicker {
 
   /**
    * Store the right information in the context for generating the templates
-   * @param products products
+   * @param products result of the query
    * @param facets facets
    * @private
    */
@@ -671,6 +717,32 @@ class CTPicker {
     if (products) {
       self.context.results = products;
     }
+  }
+}
+
+class Selection {
+
+  constructor(type, product, variantId) {
+    this.type = type;
+    this.item = product
+    this.variantId = variantId;
+  }
+
+  //
+  setItem(item) {
+    this.item = item;
+  }
+
+  getItem() {
+    return this.item;
+  }
+
+  setVariantId(variantId) {
+    this.variantId = variantId;
+  }
+
+  getVariantId() {
+    return this.variantId;
   }
 }
 

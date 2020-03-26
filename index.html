@@ -73,6 +73,7 @@
 <h1>CMS integration - Product Picker</h1>
 <button onclick="startPicker('product')" >Open the Product Picker</button>
 <button onclick="startPicker('category')" >Open the Category Picker</button>
+<button onclick="startPicker('variant')" >Open the Variant Picker</button>
 <div id="ui-view-container"></div>
 
 
@@ -86,15 +87,16 @@
   function startPicker(type) {
     var pickerOptions = {
       project: {
-        projectKey: 'projectKey',
+        projectKey: 'ivos-personal-project',
         credentials: {
-          clientId: 'clientId',
-          clientSecret: 'clientSecret'
+          clientId: 'oKqJL3KnMTuqRJbtiBClckA4',
+          clientSecret: '8k1eE92pUdHgIMk5WrLKQSwSlSZ1bSrC'
         }
       },
       mode: 'dialog',
       pickerMode: type,
-      uiLocale: "en-US",
+      uiLocale: "en",
+      // selectionMode: "multiple",
       displayOptions: {
         showHeader: false,
         showCancelButton: true,
@@ -121,6 +123,15 @@
     let ctPicker = new CTPicker(pickerOptions, document.getElementById('ui-view-container'));
 
     ctPicker.show().then((data) => {
+      data.forEach((i) => {
+        if (i.getType() === 'variant') {
+          // Handle variant selection
+          console.log('Selected Variant ID ' + i.getVariantId() + ' - ', i.getItem());
+        } else {
+          // Selected a product or category
+          console.log('Selected ' + i.getType() + ' - ', i.getItem());
+        }
+      })
       console.log(data);
     }).catch((msg) => {
       if (msg === 'cancel') {

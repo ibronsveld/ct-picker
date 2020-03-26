@@ -1,5 +1,5 @@
 {
-  "en-US": {
+  "en": {
     "title": "commercetools picker",
     "searchButton": "Search Now",
     "cancelButton": "Cancel",
@@ -16,11 +16,14 @@
     "priceHeader": "Price(s)",
     "actionHeader": "Actions",
     "imageHeader": "Image(s)",
-    "openInMc": "Details",
+    "openInMc": "Details >>",
     "categoryNameHeader": "Category Name",
     "categoryKeyHeader": "Key",
     "categoryParentHeader": "Parent Categories",
     "categorySlugHeader": "Slug",
-    "categoryProductCountLabel": " products"
+    "categoryProductCountLabel": " products",
+    "noAvailabilityLabel": "No availability",
+    "LoadingAvailabilityLabel": "Loading availability...",
+    "availabilityLabel": "Total availability: {1}"
   }
 }

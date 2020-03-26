@@ -277,8 +277,7 @@
             {{masterVariant.sku}}
         </div>
         <div class="ctp-col-2 ctp-column">
-            <!--TODO: Fix localization here-->
-            {{name.en}}
+            {{#getLocalizedString name}}{{/getLocalizedString}}
         </div>
         <div class="ctp-col-2 image ctp-column">
             <img src="{{masterVariant.images.0.url}}" class="ctp-thumbnail"/>
@@ -302,7 +301,7 @@
     <div class="ctp-row"  {{#shouldSelect id}}{{/shouldSelect}}>
 
         <div class="ctp-col-2 ctp-header-column">
-            <b>{{name.en}}</b>
+            <b>{{#getLocalizedString name}}{{/getLocalizedString}}</b>
         </div>
         <div class="ctp-col-4 ctp-header-column">
             <b>Available variants: {{#variantCount this}}{{/variantCount}}</b>
@@ -317,15 +316,18 @@
                 {{masterVariant.sku}}
             </div>
             <div class="ctp-col-2 ctp-column">
-                Variant ID: {{masterVariant.id}}
+                Variant ID: {{masterVariant.id}} (master)
             </div>
             <div class="ctp-col-2 image ctp-column">
+                <!--TODO: Conditional-->
                 <img src="{{masterVariant.images.0.url}}" class="ctp-thumbnail"/>
             </div>
             <div class="ctp-col-1 ctp-column">
-                {{#formatPrice masterVariant.prices 0 "EUR"}}{{/formatPrice}}
+                <!--TODO: Conditional-->
+                {{#formatPrice masterVariant.prices 0 }}{{/formatPrice}}
             </div>
             <div class="ctp-col-2 ctp-column">
+                {{#showVariantAvailability masterVariant }}{{/showVariantAvailability}}
             </div>
         </div>
 
@@ -338,12 +340,15 @@
                     Variant ID: {{id}}
                 </div>
                 <div class="ctp-col-2 image ctp-column">
+                    <!--TODO: Conditional-->
                     <img src="{{images.0.url}}" class="ctp-thumbnail"/>
                 </div>
                 <div class="ctp-col-1 ctp-column">
-                    {{#formatPrice prices 0 "EUR"}}{{/formatPrice}}
+                    <!--TODO: Conditional-->
+                    {{#formatPrice prices 0 }}{{/formatPrice}}
                 </div>
                 <div class="ctp-col-2 ctp-column">
+                    {{#showVariantAvailability this }}{{/showVariantAvailability}}
                 </div>
             </div>
         {{/each}}

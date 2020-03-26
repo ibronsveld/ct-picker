@@ -79,6 +79,17 @@ class CTPicker {
       return self._getLabel(key);
     });
 
+    Handlebars.registerHelper('getLocalizedString', (value, options) => {
+      // Check if the locale has been set
+      let uiLocale = self.options.uiLocale || 'en';
+
+      if (value[uiLocale]) {
+        return value[uiLocale];
+      } else {
+        return '--';
+      }
+    });
+
     Handlebars.registerHelper('mcLink', (id, options) => {
       if (id) {
         let uriTemplate = `${self.options.platform.mcUri}/${self.options.project.projectKey}/products/${id}/general`;
@@ -90,10 +101,12 @@ class CTPicker {
       }
     });
 
-    Handlebars.registerHelper('formatPrice', (prices, index, currency, options) => {
+    Handlebars.registerHelper('formatPrice', (prices, index, options) => {
+
+      let self = this;
 
       index = index || 0;
-      currency = currency || "EUR";
+      let currency =  self.options.currency;
 
       if (prices) {
         let priceObject = prices[index];
@@ -132,6 +145,22 @@ class CTPicker {
       return 1;
     });
 
+    Handlebars.registerHelper("showVariantAvailability", function(variant, options) {
+
+      let element_id = 'avail-prefix-' + variant.sku;
+
+      self._getTotalVariantAvailability(variant).then((availability) => {
+        let element = document.getElementById(element_id);
+        element.innerHTML = self._format(self._getLabel('availabilityLabel'), availability);
+      }).catch(() => {
+        let element = document.getElementById(element_id);
+        element.innerHTML = self._getLabel('noAvailabilityLabel');
+      });
+
+      return new Handlebars.SafeString('<span id="' + element_id + '">' + self._getLabel('loadingAvailabilityLabel')+ '</span>');
+
+    });
+
     Handlebars.registerHelper("ifValue", function(conditional, options) {
       if (conditional == options.hash.equals) {
         return options.fn(this);
@@ -139,9 +168,6 @@ class CTPicker {
         return options.inverse(this);
       }
     });
-
-    // CREATE A SELECTION STATE OBJECT
-    this.selection = new Selection(this.options.pickerMode);
 
     // SETUP CONTAINER ELEMENT
     try {
@@ -371,32 +397,9 @@ class CTPicker {
     }
   }
 
-  /**
-   * Finds the object in the current search data
-   * @param id
-   * @returns {Promise<any>}
-   * @private
-   */
-  _findById(id) {
-    return new Promise((resolve, reject) => {
-      let self = this;
-
-      if (self.context && self.context.results) {
-        // Let's find the right element
-        self.context.results.forEach((item) => {
-          if (item["id"] === id) {
-            resolve(item);
-          }
-        });
-      } else {
-        reject("no data");
-      }
-    });
-  }
-
   _createSelection(element) {
 
-    //
+    // Introduces variant ID
     let productId = element.getAttribute("data-id");
     let variantId = element.getAttribute("data-variant-id");
 
@@ -524,6 +527,13 @@ class CTPicker {
         });
       }
 
+      // v1.0: There is no UI for filters
+      if (self.options.filters) {
+        self.options.filters.forEach((filter) => {
+          productQuery.filter(filter);
+        });
+      }
+
       // Add the other options
       productQuery.text(freetextSearch, ((self.options.searchLanguage) ? self.options.searchLanguage : "en"));
       productQuery.perPage((self.options.pageSize) ? self.options.pageSize : 20);
@@ -533,6 +543,7 @@ class CTPicker {
         method: 'GET'
       };
 
+      console.log(productQuery.build());
       // Do a search
       self._doRequest(productRequest).then((response) => {
         if (response.body && response.body.results) {
@@ -638,7 +649,6 @@ class CTPicker {
             button.setAttribute("data-selected", "true");
           }
 
-
           //self._findById(button.getAttribute("data-id"), button.getAttribute("data-variant-id")).then((selectedObject) => {
           self._createSelection(button).then((selectedObject) => {
 
@@ -657,6 +667,52 @@ class CTPicker {
       })
     });
   }
+
+  //
+  _getTotalVariantAvailability(variant) {
+    let self = this;
+    return new Promise((resolve, reject) => {
+
+      let totalAvailability = 0;
+      if (variant && variant.availability) {
+        if (variant.availability.availableQuantity) {
+          totalAvailability += variant.availability.availableQuantity;
+        }
+
+        if (variant.availability.channels) {
+          let channelKeys = Object.keys(variant.availability.channels);
+
+          const start = async () => {
+            await self._asyncForEach(channelKeys, async (key) => {
+              let item = variant.availability.channels[key];
+              if (item) {
+                if (item.availableQuantity) {
+                  totalAvailability += item.availableQuantity;
+                }
+              }
+            });
+
+            if (totalAvailability > 0)
+              resolve(totalAvailability);
+            else
+              reject();
+          }
+
+          start();
+        }
+      } else {
+        reject();
+      }
+    });
+  }
+
+  // Helper method to loop over an array with a promise
+  async _asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+      await callback(array[index], index, array);
+    }
+  }
+
 
   /**
    * Remove selection
@@ -720,27 +776,43 @@ class CTPicker {
   }
 }
 
+/**
+ * Object that holds the selection
+ */
 class Selection {
 
-  constructor(type, product, variantId) {
+  /**
+   * Creates an instance of the selection object
+   * @param type Type of object
+   * @param item Selected object
+   * @param variantId variantId, when type == variant
+   */
+  constructor(type, item, variantId) {
     this.type = type;
-    this.item = product
+    this.item = item;
     this.variantId = variantId;
   }
 
-  //
-  setItem(item) {
-    this.item = item;
+  /**
+   * Returns the type
+   * @returns {*|string}
+   */
+  getType() {
+    return this.type;
   }
 
+  /**
+   * Returns the selected item
+   * @returns {*}
+   */
   getItem() {
     return this.item;
   }
 
-  setVariantId(variantId) {
-    this.variantId = variantId;
-  }
-
+  /**
+   * Returns the variantId, when selected
+   * @returns {*}
+   */
   getVariantId() {
     return this.variantId;
   }

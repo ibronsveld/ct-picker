@@ -5,11 +5,15 @@
     "graphQLUri": "https://api.commercetools.com",
     "mcUri": "https://mc.commercetools.com"
   },
-  "uiLocale": "en-US",
+  "uiLocale": "en",
   "mode": "dialog",
   "pageSize": 20,
   "searchLanguage": "en",
   "selectionMode": "single",
   "pickerMode": "product",
-  "allowVariantSelection": "true"
+  "allowVariantSelection": "true",
+  "currency": "EUR",
+  "filters": [
+
+  ]
 }

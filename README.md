@@ -29,12 +29,23 @@ var ctPicker = new CTPicker(options, containerElementOrContainerElementID);
 For more information on how to provide additional options, check the Configuration Options paragraph.
 
 ### Step 3: Display and handle the result
+All selections are returned in a custom object. This object will provide the selected item and, when required, the selected variant when the picker is operating in variant mode.
 
 ```javascript
 ctPicker.show().then((result) => {
-  console.log("User selected the following items ", result);
+  result.forEach((selection) => {
+    if (selection.getType() === 'variant') {
+      // Handle variant selection
+      console.log('Selected Variant ID ' + selection.getVariantId() + ' - ', selection.getItem());
+    } else {
+      // Selected a product or category
+      console.log('Selected ' + selection.getType() + ' - ', selection.getItem());
+    }
+  })
 });
 ``` 
+
+Note: any selection where variantID equals 1, means the masterVariant is selected. 
 
 ## Configuration Options
 
@@ -45,12 +56,15 @@ ctPicker.show().then((result) => {
 | mode | How to display the picker | String - "_embedded_" to embed in the page, "_dialog_" to generate a dialog (default value) |
 | pageSize | Maximum items to load per search | Number - 20 (default value)|
 | searchLanguage | Language to use when searching | String - "_en_" (default value)|
-| uiLocale | Locale of the UI | String - "_en-US_" (default value)  |
+| uiLocale | Locale of the UI | String - "_en_" (default value)  |
+| currency | Currency to display | String - "_EUR_" (default value)  |
 | displayOptions | Additional options around the UI | Object - { showHeader, showCancelButton, showSelectButton } |
 | selectionMode | Set selection mode | String - "_single_" (default value) or "_multiple_"
-| pickerMode | Set type of objects to pick. | String - "_product_" (default value) or "_category_"
+| pickerMode | Set type of objects to pick. | String - "_product_" (default value), "_variant_" for detailed selection of product variants or "_category_"
 | handlers | Custom event handlers. | Object - { onSelect: (items), onItemSelected: (item), onItemDeselected: (item), onCancel: () }
-| selectedItems | Can be used to pass any selected items to the picker |Array - Should contain array of valid Product or Category IDs                                                        
+                             
+For more information on uiLocale, see https://en.wikipedia.org/wiki/IETF_language_tag                              
+                                                    
 ### Configure the display
 As part of the options, the UI can be configured to show the header as well as the cancel or select buttons at the bottom.
 
@@ -82,7 +96,7 @@ As part of the options, the UI can be configured to show the header as well as t
     searchLanguage: "en",
     selectionMode: "single",
     pickerMode: "product",
-    uiLocale: "en-US",
+    uiLocale: "en",
     displayOptions: {
       showHeader: false,
       showCancelButton: false,
@@ -104,7 +118,6 @@ As part of the options, the UI can be configured to show the header as well as t
     }
   };
 ```
-
 
 ## Common Examples
 
@@ -188,7 +201,7 @@ yarn build
     mode: 'dialog',
     pageSize: 20,
     searchLanguage: "en",
-    uiLocale: "en-US"
+    uiLocale: "en"
   };
 
   let ctPicker = new CTPicker(pickerOptions, 'container');

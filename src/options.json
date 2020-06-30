@@ -1,8 +1,8 @@
 {
   "platform": {
-    "authUri": "https://auth.commercetools.com",
-    "apiUri": "https://api.commercetools.com",
-    "graphQLUri": "https://api.commercetools.com",
+    "authUri": "https://auth.europe-west1.gcp.commercetools.com",
+    "apiUri": "https://api.europe-west1.gcp.commercetools.com",
+    "graphQLUri": "https://api.europe-west1.gcp.commercetools.com",
     "mcUri": "https://mc.commercetools.com"
   },
   "uiLocale": "en",
@@ -11,7 +11,6 @@
   "searchLanguage": "en",
   "selectionMode": "single",
   "pickerMode": "product",
-  "allowVariantSelection": "true",
   "currency": "EUR",
   "filters": [
 

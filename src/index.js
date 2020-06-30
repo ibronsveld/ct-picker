@@ -26,8 +26,8 @@ class CTPicker {
     this.htmlTemplate = require("../picker.html");
 
     // Load the default options
-    let defaultOptions = require('./options.json');
-    this.options = { ...defaultOptions, ...options};
+    let defaultOptions = require('./options.json');    
+    this.options = Object.assign({}, defaultOptions, options);
 
     this.options.translations = require('./translations.json');
 
@@ -40,13 +40,14 @@ class CTPicker {
           createAuthMiddlewareForClientCredentialsFlow({
             host: this.options.platform.authUri,
             projectKey: this.options.project.projectKey,
-            scopes: ['view_published_products:' + this.options.project.projectKey, 'view_products:' + this.options.project.projectKey ],
+            scopes: ['view_products:' + this.options.project.projectKey, 'view_categories:' + this.options.project.projectKey ],
             credentials: {
               clientId: this.options.project.credentials.clientId,
               clientSecret: this.options.project.credentials.clientSecret
             }
-          }, fetch),
-          createHttpMiddleware({host: this.options.platform.graphQLUri}, fetch)
+            , fetch
+          }),
+          createHttpMiddleware({host: this.options.platform.apiUri, fetch})
         ]
       });
       this._requestBuilder = createRequestBuilder({
@@ -81,7 +82,8 @@ class CTPicker {
 
     Handlebars.registerHelper('getLocalizedString', (value, options) => {
       // Check if the locale has been set
-      let uiLocale = self.options.uiLocale || 'en';
+      //let uiLocale = self.options.uiLocale || 'en';
+      let uiLocale = self.options.searchLanguage || 'en';
 
       if (value[uiLocale]) {
         return value[uiLocale];
@@ -542,13 +544,11 @@ class CTPicker {
         uri: productQuery.build(),
         method: 'GET'
       };
-
-      console.log(productQuery.build());
+      
       // Do a search
       self._doRequest(productRequest).then((response) => {
         if (response.body && response.body.results) {
-          self._updateTemplateContext(response.body.results, response.body.facets);
-          console.log(response.body.results);
+          self._updateTemplateContext(response.body.results, response.body.facets);          
           self._printResults();
         }
       });
@@ -586,7 +586,7 @@ class CTPicker {
 
       // Do a search
       query.execute().then((response) => {
-        console.log(response);
+        // console.log(response);
         if (response.body && response.body.data && response.body.data.categorySearch && response.body.data.categorySearch.results) {
           self._updateTemplateContext(response.body.data.categorySearch.results, response.body.facets);
           self._printResults();
@@ -816,11 +816,6 @@ class Selection {
   getVariantId() {
     return this.variantId;
   }
-}
-
-// TODO: Build a builder??
-class CTPickerBuilder {
-
 }
 
 // TODO: proper expose?
